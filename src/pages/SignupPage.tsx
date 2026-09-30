@@ -25,8 +25,41 @@ import { ProviderButton } from '../components/common/ProviderButton';
 import { FoldingOtpInput } from '../components/FoldingOtpInput';
 import { getErrorMessage } from '../services/apiClient';
 import { ApiConfigModal } from '../components/common/ApiConfigModal';
-import { AuthLeftShowcase } from '../components/auth/AuthLeftShowcase';
 import { ServerSettingsButton } from '../components/auth/ServerSettingsButton';
+import { SITE_VERSION_LABEL } from '../config/version';
+import { DecryptedText } from '../components/reactbits/DecryptedText';
+import InfiniteMenu from '../components/InfiniteMenu/InfiniteMenu';
+
+const tcAuthMenuItems = [
+  {
+    image:
+      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
+    link: '#',
+    title: 'Password',
+    description: 'Secure credential authentication',
+  },
+  {
+    image:
+      'https://images.unsplash.com/photo-1614680376593-902f749f7ffc?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
+    link: '#',
+    title: 'Passwordless',
+    description: 'Magic links and OTP verification',
+  },
+  {
+    image:
+      'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
+    link: '#',
+    title: 'OAuth',
+    description: 'Google, GitHub and Discord',
+  },
+  {
+    image:
+      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
+    link: '#',
+    title: 'Sessions',
+    description: 'Secure account and session control',
+  },
+];
 
 const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -177,39 +210,39 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
         />
       </div>
 
-      {/* Main Container */}
-      <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 flex-1 flex flex-col justify-center">
-        {/* Mobile Header (Shown on small screens) */}
-        <div className="lg:hidden flex items-center justify-between pb-6 select-none">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
-              <KeyRound className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-lg font-black tracking-tight text-white">tc-auth</span>
-              <p className="text-[10px] text-zinc-400">Auth Engine</p>
-            </div>
+      {/* Main Split Layout */}
+      <div className="relative z-10 w-full flex-1 flex flex-col lg:flex-row min-h-screen">
+        {/* Left Half: Full-Bleed InfiniteMenu covering entire left side of screen */}
+        <div className="hidden lg:block lg:w-[50%] xl:w-[54%] min-h-screen relative overflow-hidden bg-transparent">
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <InfiniteMenu items={tcAuthMenuItems} scale={1.25} />
           </div>
-
-          <ServerSettingsButton onClick={() => setIsConfigModalOpen(true)} />
         </div>
 
-        {/* 2-Block Desktop Grid (1920x1080 alignment) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          {/* Left Block: Brand Showcase */}
-          <div className="hidden lg:block lg:col-span-6 xl:col-span-7 pr-4">
-            <AuthLeftShowcase />
-          </div>
-
-          {/* Right Block: Auth Card Form */}
-          <div className="lg:col-span-6 xl:col-span-5 flex flex-col items-center lg:items-end justify-center w-full">
-            {/* Desktop Server Settings Pill (Top right above card) */}
-            <div className="hidden lg:flex justify-end w-full max-w-[440px] mb-4">
-              <ServerSettingsButton onClick={() => setIsConfigModalOpen(true)} />
+        {/* Right Half: Centered Auth Card Form */}
+        <div className="w-full lg:w-[50%] xl:w-[46%] min-h-screen flex flex-col justify-center items-center px-4 sm:px-8 lg:px-12 py-8 relative">
+          {/* Mobile Header (Shown on small screens) */}
+          <div className="lg:hidden flex items-center justify-between w-full max-w-[440px] pb-6 select-none">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
+                <KeyRound className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-lg font-black tracking-tight text-white">tc-auth</span>
+                <p className="text-[10px] text-zinc-400">Auth Engine</p>
+              </div>
             </div>
 
-            {/* The Authentication Card */}
-            <div className="w-full max-w-[440px] bg-[#0e111a]/90 border border-zinc-800/90 rounded-[28px] p-7 sm:p-9 shadow-2xl shadow-black/90 backdrop-blur-xl relative overflow-hidden transition-all">
+            <ServerSettingsButton onClick={() => setIsConfigModalOpen(true)} />
+          </div>
+
+          {/* Desktop Server Settings Pill (Top right above card) */}
+          <div className="hidden lg:flex justify-end w-full max-w-[440px] mb-4">
+            <ServerSettingsButton onClick={() => setIsConfigModalOpen(true)} />
+          </div>
+
+          {/* The Authentication Card */}
+          <div className="w-full max-w-[440px] bg-[#0e111a]/90 border border-zinc-800/90 rounded-[28px] p-7 sm:p-9 shadow-2xl shadow-black/90 backdrop-blur-xl relative overflow-hidden transition-all">
               {apiMode === 'demo' ? (
                 /* Demo Mode Warning */
                 <div className="text-center space-y-5 py-4 animate-in fade-in duration-200">
@@ -603,14 +636,13 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Floating Server Settings Modal */}
-      <ApiConfigModal
-        isOpen={isConfigModalOpen}
-        onClose={() => setIsConfigModalOpen(false)}
-        onNavigateToLogin={() => onNavigate('/login')}
-      />
-    </div>
-  );
-};
+        {/* Floating Server Settings Modal */}
+        <ApiConfigModal
+          isOpen={isConfigModalOpen}
+          onClose={() => setIsConfigModalOpen(false)}
+          onNavigateToLogin={() => onNavigate('/login')}
+        />
+      </div>
+    );
+  };
