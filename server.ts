@@ -9,6 +9,25 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Simple cookie parser middleware
+  app.use((req, res, next) => {
+    const cookieHeader = req.headers.cookie;
+    (req as any).cookies = {};
+    if (cookieHeader) {
+      cookieHeader.split(';').forEach((part) => {
+        const [key, ...val] = part.trim().split('=');
+        if (key) {
+          try {
+            (req as any).cookies[key] = decodeURIComponent(val.join('='));
+          } catch {
+            (req as any).cookies[key] = val.join('=');
+          }
+        }
+      });
+    }
+    next();
+  });
+
   // Global CORS and permissive headers with credentials support
   app.use((req, res, next) => {
     const origin = req.headers.origin;
@@ -31,8 +50,7 @@ async function startServer() {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  // Mount standardized tc-auth backend API routes (supports both /tc-auth prefix and root paths)
-  app.use("/tc-auth", tcAuthRouter);
+  // Mount backend API routes directly at root (no /tc-auth prefix)
   app.use(tcAuthRouter);
 
   // Vite middleware for development vs static serve for production

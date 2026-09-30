@@ -22,34 +22,38 @@ oauthRouter.post('/link/:provider', (req: Request, res: Response) => {
   }
 
   const provider = req.params.provider || 'google';
-  const frontendUrl = req.query.frontend_url || req.body?.frontend_url;
+  const frontendUrl = String(
+    req.query.frontend_url || req.body?.frontend_url || req.headers['origin'] || 'http://localhost:3000'
+  );
   const providerUserId = req.body?.provider_user_id || `${provider}-user-${Date.now()}`;
 
-  if (frontendUrl) {
-    return res.json({
-      redirect_to: `${frontendUrl}?linked_provider=${provider}&status=success`,
-      provider,
-    });
-  }
+  const prefix = req.baseUrl || '';
+  // Construct redirect URL for browser OAuth linking flow
+  const redirect_url = `${frontendUrl.replace(/\/+$/, '')}/${provider}/login?frontend_url=${encodeURIComponent(frontendUrl)}&action=link`;
 
   let existing = oauthLinks.find(
     (l) => l.account_id === auth.account.id && l.provider.toLowerCase() === provider.toLowerCase()
   );
 
-  if (existing) {
-    return res.json(existing);
+  if (!existing && req.body?.provider_user_id) {
+    const newLink = {
+      id: oauthLinks.length + 1,
+      account_id: auth.account.id,
+      provider: provider.toLowerCase(),
+      provider_user_id: providerUserId,
+      created_at: new Date().toISOString(),
+    };
+    setOauthLinks([...oauthLinks, newLink]);
+    existing = newLink;
   }
 
-  const newLink = {
-    id: oauthLinks.length + 1,
-    account_id: auth.account.id,
-    provider: provider.toLowerCase(),
-    provider_user_id: providerUserId,
-    created_at: new Date().toISOString(),
-  };
-
-  setOauthLinks([...oauthLinks, newLink]);
-  return res.json(newLink);
+  return res.json({
+    redirect_url,
+    redirect_to: redirect_url,
+    provider,
+    linked: Boolean(existing),
+    link: existing || null,
+  });
 });
 
 // DELETE /account/oauth/:provider

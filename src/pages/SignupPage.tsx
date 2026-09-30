@@ -38,7 +38,13 @@ const signupSchema = z.object({
     .string()
     .min(2, 'Handle must be at least 2 characters')
     .regex(/^[a-zA-Z0-9_]+$/, 'Handle can only contain letters, numbers, and underscores'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+    ),
 });
 
 type SignupFormData = z.infer<typeof signupSchema>;
@@ -157,6 +163,7 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
       });
       setIsOtpAccepted(true);
       toast.success('Email verified and account created successfully');
+      onNavigate('/profile');
     } catch (err: any) {
       toast.error(getErrorMessage(err, 'Failed to complete signup.'));
     } finally {

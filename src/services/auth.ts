@@ -6,11 +6,14 @@ import {
   StandardActionResponse,
 } from '../types';
 import {
+  apiClient,
   clearAllTokensAndCookies,
+  DEFAULT_BASE_URL,
+  getCustomBaseUrl,
   getStoredApiMode,
   LOCAL_STORAGE_REFRESH_TOKEN_KEY,
   LOCAL_STORAGE_TOKEN_KEY,
-  requestWithFallback,
+  tokenStorage,
 } from './apiClient';
 import { INITIAL_ACCOUNTS } from './mockData';
 
@@ -42,8 +45,7 @@ export function saveDemoAccounts(accounts: any[]) {
 function createDemoTokenResponse(account: any): AuthResponse {
   const access_token = `app_jwt_${account.id}_${Date.now()}`;
   const refresh_token = `app_ref_${account.id}_${Date.now()}`;
-  localStorage.setItem(LOCAL_STORAGE_TOKEN_KEY, access_token);
-  localStorage.setItem(LOCAL_STORAGE_REFRESH_TOKEN_KEY, refresh_token);
+  tokenStorage.setTokens(access_token, refresh_token);
 
   return {
     access_token,
@@ -61,10 +63,7 @@ function extractAuthResponse(resData: any): AuthResponse {
   const account = payload.account || payload.user || payload.account_data || payload.data?.account || payload.data?.user || null;
 
   if (access_token) {
-    localStorage.setItem(LOCAL_STORAGE_TOKEN_KEY, access_token);
-  }
-  if (refresh_token) {
-    localStorage.setItem(LOCAL_STORAGE_REFRESH_TOKEN_KEY, refresh_token);
+    tokenStorage.setTokens(access_token, refresh_token || null);
   }
 
   return {
@@ -72,7 +71,7 @@ function extractAuthResponse(resData: any): AuthResponse {
     refresh_token,
     token_type,
     account: account || {
-      id: 'usr_me',
+      id: 1,
       uid: 'usr_me',
       name: 'User',
       email: 'user@example.com',
@@ -85,7 +84,7 @@ function extractAuthResponse(resData: any): AuthResponse {
 }
 
 export const authService = {
-  // Login with Email or Handle and Password
+  // POST /login/password
   async loginPassword(input: LoginPasswordInput): Promise<AuthResponse> {
     if (getStoredApiMode() === 'demo') {
       await new Promise((resolve) => setTimeout(resolve, 350));
@@ -102,26 +101,81 @@ export const authService = {
       return createDemoTokenResponse(matched);
     }
 
-    try {
-      const res = await requestWithFallback<any>('post', [
-        '/login/password',
-        '/login/password/',
-        '/login',
-        '/login/',
-      ], {
-        identifier: input.identifier,
-        password: input.password,
-      });
-      return extractAuthResponse(res);
-    } catch (err: any) {
-      // In development or if server is offline, fallback to demo mode
-      console.warn('Backend login endpoint unavailable, falling back to demo mode', err);
-      const accounts = getDemoAccounts();
-      return createDemoTokenResponse(accounts[0]);
-    }
+    const res = await apiClient.post('/login/password', {
+      identifier: input.identifier,
+      password: input.password,
+    });
+    return extractAuthResponse(res.data);
   },
 
-  // Signup with Name, Email, Handle, Password
+  // POST /login/otp
+  async loginOTP(input: { email: string; otp: string }): Promise<AuthResponse> {
+    if (getStoredApiMode() === 'demo') {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const accounts = getDemoAccounts();
+      const matched = accounts.find((a: any) => a.email?.toLowerCase() === input.email.toLowerCase()) || accounts[0];
+      return createDemoTokenResponse(matched);
+    }
+
+    const res = await apiClient.post('/login/otp', {
+      email: input.email,
+      otp: input.otp,
+    });
+    return extractAuthResponse(res.data);
+  },
+
+  // POST /send/email/otp/{purpose}
+  // Sends email containing both Magic Link button and 6-digit OTP code
+  async sendEmailOTP(
+    purpose: 'login' | 'signup' | 'reset' | 'verify' = 'login',
+    input: { email: string; frontend_url?: string }
+  ): Promise<{ expires_at: number }> {
+    if (getStoredApiMode() === 'demo') {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      return { expires_at: Math.floor(Date.now() / 1000) + 600 };
+    }
+
+    const frontendUrl =
+      input.frontend_url || (typeof window !== 'undefined' ? window.location.origin : undefined);
+    const res = await apiClient.post(`/send/email/otp/${purpose}`, {
+      email: input.email,
+      frontend_url: frontendUrl,
+    });
+    return res.data;
+  },
+
+  // POST /signup/otp
+  async signupOTP(input: { name: string; email: string; handle: string; password?: string; otp: string }): Promise<AuthResponse> {
+    if (getStoredApiMode() === 'demo') {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const accounts = getDemoAccounts();
+      const newAccount = {
+        id: `usr_${Date.now()}`,
+        uid: `usr_${Date.now()}`,
+        name: input.name,
+        email: input.email,
+        handle: input.handle,
+        role: 'user',
+        status: 'active',
+        has_password: Boolean(input.password),
+        created_at: new Date().toISOString(),
+      };
+      accounts.push(newAccount);
+      saveDemoAccounts(accounts);
+      return createDemoTokenResponse(newAccount);
+    }
+
+    const res = await apiClient.post('/signup/otp', {
+      name: input.name,
+      email: input.email,
+      handle: input.handle,
+      password: input.password,
+      otp: input.otp,
+    });
+    return extractAuthResponse(res.data);
+  },
+
+  // POST /signup/password
   async signupPassword(input: SignupPasswordInput): Promise<AuthResponse> {
     if (getStoredApiMode() === 'demo') {
       await new Promise((resolve) => setTimeout(resolve, 400));
@@ -143,37 +197,35 @@ export const authService = {
       return createDemoTokenResponse(newAccount);
     }
 
-    try {
-      const res = await requestWithFallback<any>('post', [
-        '/signup/password',
-        '/signup/password/',
-        '/signup',
-        '/signup/',
-      ], input);
-      return extractAuthResponse(res);
-    } catch (err: any) {
-      console.warn('Backend signup endpoint unavailable, creating local demo account', err);
-      const accounts = getDemoAccounts();
-      const newAccount = {
-        id: `usr_${Date.now()}`,
-        uid: `usr_${Date.now()}`,
-        name: input.name,
-        email: input.email,
-        handle: input.handle,
-        role: 'user',
-        status: 'active',
-        has_password: true,
-        created_at: new Date().toISOString(),
-      };
-      accounts.push(newAccount);
-      saveDemoAccounts(accounts);
-      return createDemoTokenResponse(newAccount);
-    }
+    const res = await apiClient.post('/signup/password', {
+      name: input.name,
+      email: input.email,
+      handle: input.handle,
+      password: input.password,
+    });
+    return extractAuthResponse(res.data);
   },
 
-  // Refresh Token
+  // POST /forgot/password
+  async forgotPassword(input: { email: string; otp: string; password?: string }): Promise<AuthResponse> {
+    if (getStoredApiMode() === 'demo') {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const accounts = getDemoAccounts();
+      const matched = accounts.find((a: any) => a.email?.toLowerCase() === input.email.toLowerCase()) || accounts[0];
+      return createDemoTokenResponse(matched);
+    }
+
+    const res = await apiClient.post('/forgot/password', {
+      email: input.email,
+      otp: input.otp,
+      password: input.password,
+    });
+    return extractAuthResponse(res.data);
+  },
+
+  // POST /token/refresh
   async refreshToken(refreshTokenValue?: string): Promise<RefreshTokenResponse> {
-    const currentRef = refreshTokenValue || localStorage.getItem(LOCAL_STORAGE_REFRESH_TOKEN_KEY);
+    const currentRef = refreshTokenValue || tokenStorage.getRefreshToken();
     if (!currentRef) {
       throw new Error('No refresh token available');
     }
@@ -182,8 +234,7 @@ export const authService = {
       await new Promise((resolve) => setTimeout(resolve, 200));
       const newAccess = `app_jwt_refreshed_${Date.now()}`;
       const newRefresh = `app_ref_refreshed_${Date.now()}`;
-      localStorage.setItem(LOCAL_STORAGE_TOKEN_KEY, newAccess);
-      localStorage.setItem(LOCAL_STORAGE_REFRESH_TOKEN_KEY, newRefresh);
+      tokenStorage.setTokens(newAccess, newRefresh);
       return {
         access_token: newAccess,
         refresh_token: newRefresh,
@@ -191,21 +242,16 @@ export const authService = {
       };
     }
 
-    const res = await requestWithFallback<any>('post', [
-      '/token/refresh',
-      '/token/refresh/',
-      '/auth/refresh',
-    ], {
+    const res = await apiClient.post('/token/refresh', {
       refresh_token: currentRef,
     });
 
-    const payload = res?.data || res || {};
-    const newAccess = payload.access_token || payload.token || `app_jwt_refreshed_${Date.now()}`;
+    const payload = res.data?.data || res.data || {};
+    const newAccess = payload.access_token || payload.token;
     const newRefresh = payload.refresh_token || currentRef;
 
-    localStorage.setItem(LOCAL_STORAGE_TOKEN_KEY, newAccess);
-    if (newRefresh) {
-      localStorage.setItem(LOCAL_STORAGE_REFRESH_TOKEN_KEY, newRefresh);
+    if (newAccess) {
+      tokenStorage.setTokens(newAccess, newRefresh);
     }
 
     return {
@@ -215,71 +261,7 @@ export const authService = {
     };
   },
 
-  // Logout Current Session
-  async logout(): Promise<StandardActionResponse> {
-    try {
-      await requestWithFallback('post', ['/logout', '/logout/'], {});
-    } catch {
-      // ignore
-    } finally {
-      clearAllTokensAndCookies();
-    }
-    return { success: true, message: 'Logged out successfully' };
-  },
-
-  // Logout All Sessions
-  async logoutAll(): Promise<StandardActionResponse> {
-    try {
-      await requestWithFallback('post', ['/logout-all', '/logout-all/', '/session/all'], {});
-    } catch {
-      // ignore
-    } finally {
-      clearAllTokensAndCookies();
-    }
-    return { success: true, message: 'All sessions ended successfully' };
-  },
-
-  // Send Email OTP / Magic Link
-  async sendEmailOTP(
-    purpose: 'login' | 'signup' | 'reset' | 'verify' = 'login',
-    input: { email: string; frontend_url?: string }
-  ) {
-    if (getStoredApiMode() === 'demo') {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      return { expires_at: Date.now() + 600000 };
-    }
-
-    const frontendUrl =
-      input.frontend_url || (typeof window !== 'undefined' ? window.location.origin : undefined);
-    return await requestWithFallback<any>('post', [
-      `/send/email/otp/${purpose}`,
-      `/send/email/otp/${purpose}/`,
-      `/otp/send/${purpose}`,
-      `/send-email-otp/${purpose}`,
-    ], {
-      email: input.email,
-      frontend_url: frontendUrl,
-    });
-  },
-
-  // Login with OTP
-  async loginOTP(input: { email: string; otp: string }): Promise<AuthResponse> {
-    if (getStoredApiMode() === 'demo') {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const accounts = getDemoAccounts();
-      const matched = accounts.find((a: any) => a.email?.toLowerCase() === input.email.toLowerCase()) || accounts[0];
-      return createDemoTokenResponse(matched);
-    }
-
-    const res = await requestWithFallback<any>('post', [
-      '/login/otp',
-      '/login/otp/',
-      '/auth/login/otp',
-    ], input);
-    return extractAuthResponse(res);
-  },
-
-  // Verify Magic Link
+  // POST /link/{purpose} (Programmatic Bot-Safe Verification for SPAs)
   async verifyMagicLink(purpose: string, input: { email: string; otp: string }): Promise<AuthResponse> {
     if (getStoredApiMode() === 'demo') {
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -288,65 +270,47 @@ export const authService = {
       return createDemoTokenResponse(matched);
     }
 
-    const res = await requestWithFallback<any>('post', [
-      `/verify/magic-link/${purpose}`,
-      `/verify/magic-link/${purpose}/`,
-      '/verify/magic-link',
-      '/auth/verify-magic-link',
-    ], input);
-    return extractAuthResponse(res);
+    const res = await apiClient.post(`/link/${purpose}`, {
+      email: input.email,
+      otp: input.otp,
+    });
+    return extractAuthResponse(res.data);
   },
 
-  // Signup with OTP
-  async signupOTP(input: { name: string; email: string; handle: string; password?: string; otp: string }): Promise<AuthResponse> {
-    if (getStoredApiMode() === 'demo') {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const accounts = getDemoAccounts();
-      const newAccount = {
-        id: `usr_${Date.now()}`,
-        uid: `usr_${Date.now()}`,
-        name: input.name,
-        email: input.email,
-        handle: input.handle,
-        role: 'user',
-        status: 'active',
-        has_password: Boolean(input.password),
-        created_at: new Date().toISOString(),
-      };
-      accounts.push(newAccount);
-      saveDemoAccounts(accounts);
-      return createDemoTokenResponse(newAccount);
+  // POST /logout
+  async logout(): Promise<StandardActionResponse> {
+    try {
+      await apiClient.post('/logout', {});
+    } catch {
+      // ignore
+    } finally {
+      clearAllTokensAndCookies();
     }
-
-    const res = await requestWithFallback<any>('post', [
-      '/signup/otp',
-      '/signup/otp/',
-      '/auth/signup/otp',
-    ], input);
-    return extractAuthResponse(res);
+    return { success: true, message: 'Logged out successfully' };
   },
 
-  // Forgot Password / Reset Password
-  async forgotPassword(input: { email: string; otp: string; password?: string }): Promise<AuthResponse> {
-    if (getStoredApiMode() === 'demo') {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const accounts = getDemoAccounts();
-      const matched = accounts.find((a: any) => a.email?.toLowerCase() === input.email.toLowerCase()) || accounts[0];
-      return createDemoTokenResponse(matched);
+  // POST /logout-all
+  async logoutAll(): Promise<StandardActionResponse> {
+    try {
+      await apiClient.post('/logout-all', {});
+    } catch {
+      // ignore
+    } finally {
+      clearAllTokensAndCookies();
     }
-
-    const res = await requestWithFallback<any>('post', [
-      '/forgot-password',
-      '/forgot-password/',
-      '/password/reset',
-      '/auth/forgot-password',
-    ], input);
-    return extractAuthResponse(res);
+    return { success: true, message: 'All sessions ended successfully' };
   },
 
-  // Get OAuth Login URL
+  // OAuth Login URL: ${serverUrl}/${provider}/login?frontend_url=${encodeURIComponent(frontendUrl)}
   getOAuthLoginUrl(provider: 'google' | 'github' | 'discord'): string {
-    const baseUrl = (typeof window !== 'undefined' ? window.location.origin : '') || '';
-    return `/auth/${provider}?redirect_url=${encodeURIComponent(baseUrl + '/profile')}`;
+    const rawBase = getCustomBaseUrl() || DEFAULT_BASE_URL || '';
+    let serverUrl = rawBase.trim();
+    if (serverUrl) {
+      serverUrl = serverUrl.replace(/\/+$/, '');
+    } else if (typeof window !== 'undefined' && window.location.origin) {
+      serverUrl = window.location.origin;
+    }
+    const frontendUrl = (typeof window !== 'undefined' ? window.location.origin : '') || 'http://localhost:3000';
+    return `${serverUrl}/${provider}/login?frontend_url=${encodeURIComponent(frontendUrl)}`;
   },
 };

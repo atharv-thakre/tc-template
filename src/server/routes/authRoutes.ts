@@ -53,15 +53,24 @@ authRouterGroup.get('/link/:purpose', (req: Request, res: Response) => {
   const purpose = req.params.purpose || 'login';
   const email = String(req.query.email || '');
   const otp = String(req.query.otp || '123456');
-  const frontendUrl = String(req.query.frontend_url || req.headers['origin'] || 'http://localhost:3000');
+  const frontendUrl = String(req.query.frontend_url || req.headers['origin'] || 'http://localhost:3000').replace(/\/+$/, '');
+
+  const purposeTarget =
+    purpose === 'login'
+      ? `${frontendUrl}/magic-link/login`
+      : purpose === 'signup'
+      ? `${frontendUrl}/magic-link/signup`
+      : purpose === 'reset'
+      ? `${frontendUrl}/magic-link/reset`
+      : `${frontendUrl}/magic-link/verify`;
 
   if (!email || !otp) {
-    return res.redirect(307, `${frontendUrl}/magic-link/callback?error=${encodeURIComponent('Missing email or OTP')}`);
+    return res.redirect(307, `${purposeTarget}?error=${encodeURIComponent('Missing email or OTP')}`);
   }
 
   const record = otps.find((o) => o.email.toLowerCase() === email.toLowerCase() && o.purpose === purpose && o.otp === otp);
   if (!record || record.expires_at < Math.floor(Date.now() / 1000)) {
-    return res.redirect(307, `${frontendUrl}/magic-link/callback?error=${encodeURIComponent('Link expired, invalid, or already used')}`);
+    return res.redirect(307, `${purposeTarget}?error=${encodeURIComponent('Link expired, invalid, or already used')}`);
   }
 
   const account = accounts.find((a) => a.email.toLowerCase() === email.toLowerCase()) || accounts[0];
@@ -69,24 +78,24 @@ authRouterGroup.get('/link/:purpose', (req: Request, res: Response) => {
   if (purpose === 'login') {
     setOtps(otps.filter((o) => o !== record));
     const tokens = createTokens(account);
-    return res.redirect(307, `${frontendUrl}/oauth/callback?access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token}`);
+    return res.redirect(307, `${frontendUrl}/magic-link/login?access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token}`);
   }
 
   if (purpose === 'verify') {
     setOtps(otps.filter((o) => o !== record));
     account.status = 'active';
-    return res.redirect(307, `${frontendUrl}/magic-link/callback?verified=true&email=${encodeURIComponent(email)}`);
+    return res.redirect(307, `${frontendUrl}/magic-link/verify?verified=true&email=${encodeURIComponent(email)}`);
   }
 
   if (purpose === 'reset') {
-    return res.redirect(307, `${frontendUrl}/reset-password?email=${encodeURIComponent(email)}&otp=${otp}`);
+    return res.redirect(307, `${frontendUrl}/magic-link/reset?email=${encodeURIComponent(email)}&otp=${otp}`);
   }
 
   if (purpose === 'signup') {
-    return res.redirect(307, `${frontendUrl}/signup?email=${encodeURIComponent(email)}&otp=${otp}&verified=true`);
+    return res.redirect(307, `${frontendUrl}/magic-link/signup?email=${encodeURIComponent(email)}&otp=${otp}&verified=true`);
   }
 
-  return res.redirect(307, `${frontendUrl}/magic-link/callback?error=${encodeURIComponent('Unknown purpose')}`);
+  return res.redirect(307, `${purposeTarget}?error=${encodeURIComponent('Unknown purpose')}`);
 });
 
 // 4. POST /link/:purpose

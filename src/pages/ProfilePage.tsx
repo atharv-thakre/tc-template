@@ -20,6 +20,7 @@ import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { profileService } from '../services/profile';
+import { authService } from '../services/auth';
 import { OAuthLink } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
@@ -92,11 +93,20 @@ export const ProfilePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
 
   const handleLinkOAuth = async (provider: 'google' | 'github' | 'discord') => {
     try {
-      await profileService.linkOAuthProvider(provider);
+      const res = await profileService.linkOAuthProvider(provider, { frontend_url: window.location.origin });
+      if (res && res.redirect_url) {
+        const target = res.redirect_url.startsWith('http')
+          ? res.redirect_url
+          : `${authService.getOAuthLoginUrl(provider)}&action=link`;
+        window.location.href = target;
+        return;
+      }
       toast.success(`Connected ${provider} successfully`);
       loadOAuthLinks();
     } catch (err: any) {
-      toast.error(getErrorMessage(err, `Failed to link ${provider}`));
+      // If direct POST fails, redirect to OAuth login route with action=link
+      const loginUrl = authService.getOAuthLoginUrl(provider);
+      window.location.href = `${loginUrl}&action=link`;
     }
   };
 

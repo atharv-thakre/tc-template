@@ -1,9 +1,5 @@
-import React, { useState } from 'react';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import React from 'react';
 import { authService } from '../../services/auth';
-import { useAuth } from '../../contexts/AuthContext';
-import { useApiConfig } from '../../contexts/ApiConfigContext';
 
 export interface ProviderButtonProps {
   provider: 'google' | 'github' | 'discord';
@@ -19,40 +15,18 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
   label,
   short = false,
   onClick,
-  onSuccessNavigate,
   className = '',
 }) => {
-  const { loginOAuth } = useAuth();
-  const { apiMode } = useApiConfig();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const redirectUrl = authService.getOAuthLoginUrl(provider);
-
-  const handleClick = async (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (onClick) {
       onClick();
       return;
     }
 
-    if (apiMode === 'demo') {
-      setIsLoading(true);
-      try {
-        await loginOAuth(provider);
-        const providerName = provider === 'google' ? 'Google' : provider === 'github' ? 'GitHub' : 'Discord';
-        toast.success(`Signed in with ${providerName} (Demo Mode)`);
-        if (onSuccessNavigate) {
-          onSuccessNavigate();
-        }
-      } catch (err: any) {
-        toast.error(err.message || 'Demo OAuth login failed');
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      // Live server mode: navigate to backend OAuth login route
-      window.location.href = redirectUrl;
-    }
+    // Directly trigger OAuth login route via configured server URL (${serverUrl}/${provider}/login?frontend_url=...)
+    const targetUrl = authService.getOAuthLoginUrl(provider);
+    window.location.href = targetUrl;
   };
 
   const isGoogle = provider === 'google';
@@ -63,16 +37,13 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
     <button
       type="button"
       onClick={handleClick}
-      disabled={isLoading}
       title={`Continue with ${defaultLabel}`}
-      className={`group relative flex items-center justify-center gap-1.5 w-full py-1.5 px-2.5 text-xs font-semibold rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.09] text-zinc-200 hover:text-white hover:border-white/20 transition-all duration-200 shadow-sm active:scale-[0.97] disabled:opacity-50 cursor-pointer overflow-hidden select-none backdrop-blur-md ${className}`}
+      className={`group relative flex items-center justify-center gap-1.5 w-full py-1.5 px-2.5 text-xs font-semibold rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.09] text-zinc-200 hover:text-white hover:border-white/20 transition-all duration-200 shadow-sm active:scale-[0.97] cursor-pointer overflow-hidden select-none backdrop-blur-md ${className}`}
     >
       {/* Subtle hover gradient sweep */}
       <span className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-      {isLoading ? (
-        <Loader2 className="w-3.5 h-3.5 text-indigo-400 animate-spin shrink-0" />
-      ) : isGoogle ? (
+      {isGoogle ? (
         <svg className="w-3.5 h-3.5 shrink-0 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
           <path
             fill="#4285F4"

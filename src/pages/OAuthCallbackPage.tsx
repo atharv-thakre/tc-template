@@ -128,18 +128,15 @@ export const OAuthCallbackPage: React.FC<OAuthCallbackPageProps> = ({ provider =
         }
       }
 
-      // 3. Fallback: check if user is already authenticated in local state
-      const existingToken = tokenStorage.getAccessToken();
-      if (existingToken) {
-        try {
-          await refetchMe();
-          setStatus('success');
-          toast.success('Session verified');
-          setTimeout(() => onNavigate('/profile'), 800);
-          return;
-        } catch {
-          // Token invalid
-        }
+      // 3. Cookie Transport / Session Verification: check if session cookie is set
+      try {
+        await refetchMe();
+        setStatus('success');
+        toast.success('Session verified');
+        setTimeout(() => onNavigate('/profile'), 800);
+        return;
+      } catch {
+        // Not authenticated
       }
 
       setStatus('error');

@@ -139,11 +139,18 @@ export function validatePassword(password: string): boolean {
 }
 
 export function getAuthenticatedAccountAndSession(req: any) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  let token: string | null = null;
+  const authHeader = req.headers?.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  } else if (req.cookies && (req.cookies.access_token || req.cookies.token || req.cookies.jwt)) {
+    token = req.cookies.access_token || req.cookies.token || req.cookies.jwt;
+  }
+
+  if (!token) {
     return null;
   }
-  const token = authHeader.split(' ')[1];
+
   let account = accounts[0];
   const matchId = token.match(/_(\d+)_/);
   if (matchId && matchId[1]) {

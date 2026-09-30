@@ -167,13 +167,13 @@ export interface ServerPreset {
 export const BUILTIN_PRESETS: ServerPreset[] = [
   {
     id: 'codesena-live',
-    name: 'CodeSena Live API (Default)',
+    name: 'CodeSena Live API',
     url: 'https://api.codesena.me/tc-auth',
     isBuiltin: true,
   },
   {
     id: 'localhost-8000',
-    name: 'Local Backend (localhost:8000)',
+    name: 'Local Server',
     url: 'http://localhost:8000/tc-auth',
     isBuiltin: true,
   },
@@ -191,7 +191,11 @@ export function getCustomPresets(): ServerPreset[] {
           typeof p.url === 'string' &&
           typeof p.name === 'string' &&
           !p.url.includes('totalchaos.online') &&
-          p.url !== '/tc-auth'
+          p.url !== '/tc-auth' &&
+          p.url !== 'http://localhost:3000' &&
+          p.url !== 'https://api.codesena.me' &&
+          p.url !== 'https://api.codesena.me/tc-auth' &&
+          p.url !== 'http://localhost:8000/tc-auth'
       );
     }
     return [];
@@ -250,12 +254,19 @@ export function normalizeBaseUrl(input?: string | null): string {
   if (!input || !input.trim()) return DEFAULT_BASE_URL;
   let trimmed = input.trim();
 
+  // Repair single-slash typos like http:/localhost:8000
+  if (trimmed.startsWith('http:/') && !trimmed.startsWith('http://')) {
+    trimmed = trimmed.replace(/^http:\/+/i, 'http://');
+  } else if (trimmed.startsWith('https:/') && !trimmed.startsWith('https://')) {
+    trimmed = trimmed.replace(/^https:\/+/i, 'https://');
+  }
+
   // If it's a relative path starting with '/', preserve it (e.g. /tc-auth, /api)
   if (trimmed.startsWith('/')) {
     return trimmed.length > 1 ? trimmed.replace(/\/+$/, '') : trimmed;
   }
 
-  // If missing protocol (e.g. localhost:5000, 127.0.0.1:5000, api.example.com)
+  // If missing protocol (e.g. localhost:8000, 127.0.0.1:8000, api.example.com)
   if (!/^https?:\/\//i.test(trimmed)) {
     if (/^(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?/i.test(trimmed)) {
       trimmed = `http://${trimmed}`;
@@ -271,7 +282,14 @@ export function normalizeBaseUrl(input?: string | null): string {
 export function getCustomBaseUrl(): string {
   try {
     const url = localStorage.getItem(LOCAL_STORAGE_CUSTOM_URL_KEY);
-    if (!url || !url.trim() || url === '/tc-auth' || url.includes('totalchaos.online')) {
+    if (
+      !url ||
+      !url.trim() ||
+      url === '/tc-auth' ||
+      url.includes('totalchaos.online') ||
+      url === 'http://localhost:3000' ||
+      url === 'https://api.codesena.me'
+    ) {
       localStorage.setItem(LOCAL_STORAGE_CUSTOM_URL_KEY, DEFAULT_BASE_URL);
       return DEFAULT_BASE_URL;
     }

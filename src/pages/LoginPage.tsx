@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -61,6 +61,30 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
 
   const [isLoading, setIsLoading] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get('email');
+      const otp = params.get('otp');
+
+      if (pathname.includes('/reset-password') || params.get('purpose') === 'reset' || (otp && email && pathname.includes('reset'))) {
+        setTab('reset');
+        if (email) setForgotEmail(email);
+        if (otp) {
+          setForgotOtp(otp);
+          setResetSent(true);
+          toast.info('Reset code received via Magic Link. Enter your new password.');
+        }
+      } else if (otp && email) {
+        setTab('email');
+        setEmailAuthInput(email);
+        setEmailAuthCode(otp);
+        setEmailAuthSent(true);
+      }
+    }
+  }, []);
 
   const {
     register: registerPassword,
@@ -149,13 +173,10 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
     }
     setIsLoading(true);
     try {
-      try {
-        await loginOTP({ email: targetEmail, otp: code });
-      } catch {
-        await loginMagicLink({ email: targetEmail, otp: code });
-      }
+      await loginOTP({ email: targetEmail, otp: code });
       setIsOtpAccepted(true);
       toast.success('Signed in successfully');
+      onNavigate('/profile');
     } catch (err: any) {
       toast.error(getErrorMessage(err, 'Invalid or expired verification code.'));
     } finally {
@@ -199,8 +220,9 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
       toast.error('Please enter the 6-digit verification code');
       return;
     }
-    if (!forgotPasswordInput || forgotPasswordInput.length < 6) {
-      toast.error('New password must be at least 6 characters');
+    const passwordPolicyRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+    if (!passwordPolicyRegex.test(forgotPasswordInput)) {
+      toast.error('Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
       return;
     }
     setIsLoading(true);
@@ -212,6 +234,7 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
       });
       setIsResetOtpAccepted(true);
       toast.success('Password updated successfully! Signing you in...');
+      onNavigate('/profile');
     } catch (err: any) {
       toast.error(getErrorMessage(err, 'Failed to reset password'));
     } finally {
