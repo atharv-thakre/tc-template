@@ -27,8 +27,6 @@ import { UserAvatar } from '../components/common/UserAvatar';
 import { PageHeader } from '../components/common/PageHeader';
 import { FormField } from '../components/common/FormField';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
-import { BorderBeam } from '../components/reactbits/BorderBeam';
-import { DecryptedText } from '../components/reactbits/DecryptedText';
 import { formatDate } from '../lib/utils';
 import { getErrorMessage } from '../services/apiClient';
 
@@ -240,7 +238,6 @@ export const ProfilePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* User Card */}
         <Card className="lg:col-span-1 relative overflow-hidden h-fit">
-          <BorderBeam size={180} duration={12} colorFrom="#6366f1" colorTo="#a855f7" />
           <CardHeader className="text-center pb-2">
             <div className="flex justify-center mb-3">
               <UserAvatar src={account.avatar_url} name={account.name} size="xl" />
@@ -256,7 +253,7 @@ export const ProfilePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
             <div className="flex justify-between py-2 border-b border-zinc-800">
               <span className="text-zinc-400">Account ID</span>
               <span className="font-mono font-medium text-zinc-100">
-                #<DecryptedText text={String(account.id)} speed={35} />
+                #{account.id}
               </span>
             </div>
             <div className="flex justify-between py-2 border-b border-zinc-800">

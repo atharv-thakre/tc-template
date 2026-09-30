@@ -300,11 +300,13 @@ export const setStoredApiBaseUrl = setCustomBaseUrl;
 export async function pingServer(url?: string): Promise<boolean> {
   const target = normalizeBaseUrl(url || getCustomBaseUrl());
   try {
-    const res = await axios.get(`${target}/ping`, { timeout: 3000 }).catch(() => null);
+    const res = await axios.get(`${target}/config/pulse`, { timeout: 4000 }).catch(() => null);
     if (res && res.status >= 200 && res.status < 400) return true;
+    const pingRes = await axios.get(`${target}/ping`, { timeout: 3000 }).catch(() => null);
+    if (pingRes && pingRes.status >= 200 && pingRes.status < 400) return true;
     const healthRes = await axios.get(`${target}/api/health`, { timeout: 3000 }).catch(() => null);
     if (healthRes && healthRes.status >= 200 && healthRes.status < 400) return true;
-    return true;
+    return false;
   } catch {
     return false;
   }

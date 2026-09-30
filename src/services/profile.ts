@@ -176,11 +176,12 @@ export const profileService = {
     ], data || {});
   },
 
-  // DELETE /account/oauth/link/:provider
+  // DELETE /account/oauth/:provider
   async unlinkOAuthProvider(provider: string): Promise<any> {
     return await requestWithFallback('delete', [
+      `/account/oauth/${provider}`,
       `/account/oauth/link/${provider}`,
-      `/oauth/link/${provider}`,
+      `/oauth/${provider}`,
     ]);
   },
 };

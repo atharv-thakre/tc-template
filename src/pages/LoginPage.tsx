@@ -25,39 +25,9 @@ import { getErrorMessage } from '../services/apiClient';
 import { ApiConfigModal } from '../components/common/ApiConfigModal';
 import { ServerSettingsButton } from '../components/auth/ServerSettingsButton';
 import { SITE_VERSION_LABEL } from '../config/version';
-import { DecryptedText } from '../components/reactbits/DecryptedText';
-import InfiniteMenu from '../components/InfiniteMenu/InfiniteMenu';
-
-const tcAuthMenuItems = [
-  {
-    image:
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
-    link: '#',
-    title: 'Password',
-    description: 'Secure credential authentication',
-  },
-  {
-    image:
-      'https://images.unsplash.com/photo-1614680376593-902f749f7ffc?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
-    link: '#',
-    title: 'Passwordless',
-    description: 'Magic links and OTP verification',
-  },
-  {
-    image:
-      'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
-    link: '#',
-    title: 'OAuth',
-    description: 'Google, GitHub and Discord',
-  },
-  {
-    image:
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
-    link: '#',
-    title: 'Sessions',
-    description: 'Secure account and session control',
-  },
-];
+import LineWaves from '../components/reactbits/LineWaves';
+import AccordionGallery from '../components/reactbits/AccordionGallery';
+import { AUTH_ACCORDION_ITEMS } from '../config/accordionItems';
 
 const passwordSchema = z.object({
   identifier: z.string().min(1, 'Email or handle is required'),
@@ -250,204 +220,231 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#080a11] text-white relative overflow-x-hidden flex flex-col justify-between">
-      {/* Background Cosmic Lighting & Grid */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        {/* Top-Left Blue/Purple Radial Glow */}
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[140px]" />
-        {/* Bottom-Left Vibrant Cyan/Purple Cosmic Light Ray */}
-        <div className="absolute -bottom-40 -left-20 w-[700px] h-[700px] bg-gradient-to-tr from-blue-600/25 via-indigo-600/20 to-purple-600/20 rounded-full blur-[160px]" />
-        {/* Top-Right Ambient Dark Glow */}
-        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-purple-900/15 rounded-full blur-[150px]" />
-        {/* Subtle Constellation Lines Grid */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-            backgroundSize: '40px 40px',
-          }}
-        />
-      </div>
+    <div className="h-screen max-h-screen w-full bg-[var(--bg-primary)] text-[var(--text-primary)] relative overflow-hidden flex flex-col justify-between">
+      {/* LineWaves OGL Motion Background - Softer, smoother intensity */}
+      <LineWaves
+        speed={0.22}
+        innerLineCount={32}
+        outerLineCount={36}
+        warpIntensity={0.8}
+        rotation={-45}
+        edgeFadeWidth={0}
+        colorCycleSpeed={1}
+        brightness={0.11}
+        color1="#6366f1"
+        color2="#818cf8"
+        color3="#a5b4fc"
+        enableMouseInteraction
+        mouseInfluence={2}
+      />
 
-      {/* Main Split Layout */}
-      <div className="relative z-10 w-full flex-1 flex flex-col lg:flex-row min-h-screen">
-        {/* Left Half: Full-Bleed InfiniteMenu covering entire left side of screen */}
-        <div className="hidden lg:block lg:w-[50%] xl:w-[54%] min-h-screen relative overflow-hidden bg-transparent">
-          <div className="absolute inset-0 w-full h-full overflow-hidden">
-            <InfiniteMenu items={tcAuthMenuItems} scale={1.25} />
+      {/* Subtle radial vignette overlay to blend background gracefully */}
+      <div className="absolute inset-0 bg-radial-[at_50%_50%] from-transparent via-[var(--bg-primary)]/40 to-[var(--bg-primary)]/90 pointer-events-none z-0" />
+
+      {/* Main Split Layout - Perfectly fits 100vh with 0 scroll */}
+      <div className="relative z-10 w-full flex-1 flex flex-col lg:flex-row h-full max-h-screen overflow-hidden">
+        {/* Left Side: React Bits AccordionGallery (Expanded top, bottom, and right) */}
+        <div className="hidden lg:flex lg:w-[60%] xl:w-[65%] 2xl:w-[68%] h-full relative items-center justify-center p-3 sm:p-4 lg:p-5 select-none overflow-hidden">
+          <div className="w-full h-full relative flex items-center">
+            <AccordionGallery
+              items={AUTH_ACCORDION_ITEMS}
+              defaultIndex={2}
+              expandRatio={0.52}
+              trigger="hover"
+              accentColor="#818cf8"
+              overlayColor="#07090e"
+              textColor="#ffffff"
+              grayscale={true}
+              tilt={6}
+              parallax={0.4}
+              gap={10}
+              radius={16}
+              height="100%"
+            />
           </div>
         </div>
 
-        {/* Right Half: Centered Auth Card Form */}
-        <div className="w-full lg:w-[50%] xl:w-[46%] min-h-screen flex flex-col justify-center items-center px-4 sm:px-8 lg:px-12 py-8 relative">
+        {/* Right Half: Centered Clean Auth Card Form */}
+        <div className="w-full lg:w-[40%] xl:w-[35%] 2xl:w-[32%] h-full overflow-y-auto lg:overflow-hidden flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-2 relative">
           {/* Mobile Header (Shown on small screens) */}
-          <div className="lg:hidden flex items-center justify-between w-full max-w-[440px] pb-6 select-none">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
-                <KeyRound className="w-4 h-4" />
+          <div className="lg:hidden flex items-center justify-between w-full max-w-[400px] pb-2 select-none">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm">
+                <KeyRound className="w-3.5 h-3.5" />
               </div>
               <div>
-                <span className="text-lg font-black tracking-tight text-white">tc-auth</span>
-                <p className="text-[10px] text-zinc-400">Auth Engine</p>
+                <span className="text-sm font-bold tracking-tight text-white">tc-auth</span>
+                <p className="text-[8px] text-zinc-400">Auth Engine</p>
               </div>
             </div>
 
             <ServerSettingsButton onClick={() => setIsConfigModalOpen(true)} />
           </div>
 
-          {/* Desktop Server Settings Pill (Top right above card) */}
-          <div className="hidden lg:flex justify-end w-full max-w-[440px] mb-4">
+          {/* Desktop Header (Top above card) */}
+          <div className="hidden lg:flex justify-between items-center w-full max-w-[400px] mb-1.5 select-none">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm">
+                <KeyRound className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <span className="text-sm font-bold tracking-tight text-white">tc-auth</span>
+                <p className="text-[8px] text-zinc-400">Auth Engine</p>
+              </div>
+            </div>
             <ServerSettingsButton onClick={() => setIsConfigModalOpen(true)} />
           </div>
 
-          {/* The Authentication Card */}
-          <div className="w-full max-w-[440px] bg-[#0e111a]/90 border border-zinc-800/90 rounded-[28px] p-7 sm:p-9 shadow-2xl shadow-black/90 backdrop-blur-xl relative overflow-hidden transition-all">
-              {/* Card Top Avatar Icon */}
-              <div className="text-center mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-3 shadow-inner">
-                  <User className="w-6 h-6" />
-                </div>
-                <h2 className="text-2xl font-extrabold text-white tracking-tight">Welcome Back</h2>
-                <p className="text-xs text-zinc-400 mt-1">Sign in to continue to your account.</p>
+          {/* Beautifully Blended Glassmorphism Authentication Card */}
+          <div className="w-full max-w-[400px] p-4 sm:p-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] rounded-2xl border border-white/10 bg-[#0c0e15]/65 backdrop-blur-2xl relative ring-1 ring-white/5">
+            {/* Card Top Avatar Icon */}
+            <div className="text-center mb-2.5">
+              <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 text-zinc-200 flex items-center justify-center mx-auto mb-1 shadow-inner backdrop-blur-md">
+                <User className="w-4 h-4 text-zinc-200" />
               </div>
+              <h2 className="text-lg font-bold text-white tracking-tight">Welcome Back</h2>
+              <p className="text-[10.5px] text-zinc-400 mt-0.5">Sign in to continue to your account.</p>
+            </div>
 
-              {/* SSO Buttons */}
-              <div className="grid grid-cols-3 gap-2.5 mb-5">
-                <ProviderButton provider="google" short onSuccessNavigate={() => onNavigate('/profile')} />
-                <ProviderButton provider="github" short onSuccessNavigate={() => onNavigate('/profile')} />
-                <ProviderButton provider="discord" short onSuccessNavigate={() => onNavigate('/profile')} />
+            {/* SSO Buttons */}
+            <div className="grid grid-cols-3 gap-1.5 mb-2">
+              <ProviderButton provider="google" short onSuccessNavigate={() => onNavigate('/profile')} />
+              <ProviderButton provider="github" short onSuccessNavigate={() => onNavigate('/profile')} />
+              <ProviderButton provider="discord" short onSuccessNavigate={() => onNavigate('/profile')} />
+            </div>
+
+            {/* Divider */}
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10" />
               </div>
-
-              {/* Divider */}
-              <div className="relative my-5">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-zinc-800/90" />
-                </div>
-                <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
-                  <span className="bg-[#0e111a] px-3 text-zinc-400">OR SIGN IN WITH CREDENTIALS</span>
-                </div>
+              <div className="relative flex justify-center text-[8.5px] uppercase font-bold tracking-wider">
+                <span className="bg-[#0e1017]/85 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/5 text-zinc-400">
+                  OR SIGN IN WITH CREDENTIALS
+                </span>
               </div>
+            </div>
 
-              {/* Mode Tabs */}
-              <div className="relative flex p-1 mb-5 rounded-2xl bg-[#080a10] border border-zinc-800/90">
-                {(['password', 'email', 'reset'] as const).map((t) => {
-                  const isActive = tab === t;
-                  const isEmail = t === 'email';
-                  const label =
-                    t === 'password' ? 'Password' : t === 'email' ? 'Magic Link & OTP' : 'Reset';
-                  const Icon = t === 'password' ? KeyRound : t === 'email' ? Sparkles : RotateCcw;
-                  return (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setTab(t)}
-                      className={`relative ${
-                        isEmail ? 'flex-[1.35]' : 'flex-1'
-                      } py-2 px-1.5 text-[11px] sm:text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 z-10 select-none ${
-                        isActive ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'
-                      }`}
-                    >
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeLoginTab"
-                          className="absolute inset-0 rounded-xl bg-indigo-600 shadow-md shadow-indigo-600/30 -z-10"
-                          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                        />
-                      )}
-                      <Icon className="w-3.5 h-3.5 shrink-0" />
-                      <span className="whitespace-nowrap">{label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Form Content */}
-              <AnimatePresence mode="wait">
-                {/* Tab 1: Password Form */}
-                {tab === 'password' && (
-                  <motion.form
-                    key="password"
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.15 }}
-                    onSubmit={handlePasswordFormSubmit}
-                    noValidate={apiMode === 'demo'}
-                    className="space-y-4"
+            {/* Mode Tabs */}
+            <div className="relative flex p-0.5 mb-2.5 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md">
+              {(['password', 'email', 'reset'] as const).map((t) => {
+                const isActive = tab === t;
+                const isEmail = t === 'email';
+                const label =
+                  t === 'password' ? 'Password' : t === 'email' ? 'Magic Link & OTP' : 'Reset';
+                const Icon = t === 'password' ? KeyRound : t === 'email' ? Sparkles : RotateCcw;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTab(t)}
+                    className={`relative ${
+                      isEmail ? 'flex-[1.25]' : 'flex-1'
+                    } py-1.5 px-1 text-[10.5px] font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 z-10 select-none ${
+                      isActive ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'
+                    }`}
                   >
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeLoginTab"
+                        className="absolute inset-0 rounded-lg bg-white/[0.08] border border-white/15 -z-10 shadow-sm backdrop-blur-md"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
+                    )}
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <span className="whitespace-nowrap font-medium">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Form Content */}
+            <AnimatePresence mode="wait">
+              {/* Tab 1: Password Form */}
+              {tab === 'password' && (
+                <motion.form
+                  key="password"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.12 }}
+                  onSubmit={handlePasswordFormSubmit}
+                  noValidate={apiMode === 'demo'}
+                  className="space-y-2"
+                >
                     {/* Identifier Field */}
-                    <div className="space-y-1.5 text-left">
-                      <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                    <div className="space-y-0.5 text-left">
+                      <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                         <span>EMAIL OR HANDLE</span>
                         <span className="text-rose-500 font-black">*</span>
                       </label>
                       <div className="relative">
-                        <Mail className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
+                        <Mail className="absolute left-2.5 top-2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
                         <input
                           type="text"
                           placeholder="admin@tcauth.dev or atharv"
                           {...registerPassword('identifier')}
                           defaultValue={apiMode === 'demo' ? 'admin@tcauth.dev' : ''}
-                          className="w-full pl-10 pr-4 py-2.5 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                          className="w-full pl-8 pr-3 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all shadow-inner"
                         />
                       </div>
                       {apiMode !== 'demo' && passwordErrors.identifier?.message && (
-                        <p className="text-[11px] text-rose-400 mt-1">{passwordErrors.identifier.message}</p>
+                        <p className="text-[9.5px] text-rose-400 mt-0.5">{passwordErrors.identifier.message}</p>
                       )}
                     </div>
 
                     {/* Password Field */}
-                    <div className="space-y-1.5 text-left">
-                      <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                    <div className="space-y-0.5 text-left">
+                      <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                         <span>PASSWORD</span>
                         <span className="text-rose-500 font-black">*</span>
                       </label>
                       <div className="relative">
-                        <Lock className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
+                        <Lock className="absolute left-2.5 top-2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
                         <input
                           type={showPassword ? 'text' : 'password'}
                           placeholder="At least 6 characters"
                           {...registerPassword('password')}
                           defaultValue={apiMode === 'demo' ? 'password123' : ''}
-                          className="w-full pl-10 pr-10 py-2.5 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                          className="w-full pl-8 pr-8 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all shadow-inner"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3.5 top-3 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                          className="absolute right-2.5 top-2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
                           title={showPassword ? 'Hide password' : 'Show password'}
                         >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                       {apiMode !== 'demo' && passwordErrors.password?.message && (
-                        <p className="text-[11px] text-rose-400 mt-1">{passwordErrors.password.message}</p>
+                        <p className="text-[9.5px] text-rose-400 mt-0.5">{passwordErrors.password.message}</p>
                       )}
                     </div>
 
                     {/* Forgot Password Link */}
-                    <div className="flex justify-end pt-0.5">
+                    <div className="flex justify-end pt-0">
                       <button
                         type="button"
                         onClick={() => setTab('reset')}
-                        className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+                        className="text-[10.5px] font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
                       >
                         Forgot password?
                       </button>
                     </div>
 
-                    {/* Primary Button */}
+                    {/* Solid Primary Button */}
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full py-3 px-4 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 active:from-indigo-700 active:to-indigo-600 rounded-xl shadow-lg shadow-indigo-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 select-none mt-2"
+                      className="w-full py-2 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-lg shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 select-none mt-1 active:scale-[0.98]"
                     >
                       {isLoading ? (
-                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
                           <span>{apiMode === 'demo' ? 'Sign In as SuperAdmin' : 'Sign In'}</span>
-                          <ArrowRight className="w-4 h-4" />
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </>
                       )}
                     </button>
@@ -458,27 +455,27 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                 {tab === 'email' && (
                   <motion.div
                     key="email"
-                    initial={{ opacity: 0, y: 6 }}
+                    initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.15 }}
-                    className="space-y-4"
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.12 }}
+                    className="space-y-2.5"
                   >
                     {!emailAuthSent ? (
-                      <form onSubmit={handleSendEmailAuth} noValidate={apiMode === 'demo'} className="space-y-4">
-                        <div className="space-y-1.5 text-left">
-                          <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                      <form onSubmit={handleSendEmailAuth} noValidate={apiMode === 'demo'} className="space-y-2.5">
+                        <div className="space-y-0.5 text-left">
+                          <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                             <span>EMAIL ADDRESS</span>
                             <span className="text-rose-500 font-black">*</span>
                           </label>
                           <div className="relative">
-                            <Mail className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
+                            <Mail className="absolute left-2.5 top-2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
                             <input
                               type="email"
                               placeholder="user@example.com"
                               value={emailAuthInput}
                               onChange={(e) => setEmailAuthInput(e.target.value)}
-                              className="w-full pl-10 pr-4 py-2.5 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                              className="w-full pl-8 pr-3 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all shadow-inner"
                             />
                           </div>
                         </div>
@@ -486,21 +483,21 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                         <button
                           type="submit"
                           disabled={isSendingEmailAuth}
-                          className="w-full py-3 px-4 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 rounded-xl shadow-lg shadow-indigo-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 select-none mt-2"
+                          className="w-full py-2 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-lg shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 select-none mt-1 active:scale-[0.98]"
                         >
                           {isSendingEmailAuth ? (
-                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           ) : (
                             <>
                               <span>Send Verification Code</span>
-                              <ArrowRight className="w-4 h-4" />
+                              <ArrowRight className="w-3.5 h-3.5" />
                             </>
                           )}
                         </button>
                       </form>
                     ) : (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between text-xs text-zinc-400">
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between text-[11px] text-zinc-400">
                           <span>
                             Sent to <span className="font-semibold text-zinc-200">{emailAuthInput}</span>
                           </span>
@@ -516,7 +513,7 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                           </button>
                         </div>
 
-                        <form onSubmit={(e) => handleVerifyEmailAuthCode(e)} className="space-y-3">
+                        <form onSubmit={(e) => handleVerifyEmailAuthCode(e)} className="space-y-2">
                           <FoldingOtpInput
                             value={emailAuthCode}
                             onChange={setEmailAuthCode}
@@ -531,11 +528,11 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                           />
 
                           {apiMode === 'demo' && !isOtpAccepted && (
-                            <div className="flex justify-end -mt-1">
+                            <div className="flex justify-end -mt-0.5">
                               <button
                                 type="button"
                                 onClick={() => setEmailAuthCode('123456')}
-                                className="text-[11px] font-mono text-amber-400/90 hover:text-amber-300 cursor-pointer"
+                                className="text-[10px] font-mono text-amber-400/90 hover:text-amber-300 cursor-pointer"
                               >
                                 Fill demo code: 123456
                               </button>
@@ -546,14 +543,14 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                             <button
                               type="submit"
                               disabled={isLoading}
-                              className="w-full py-3 px-4 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 rounded-xl shadow-lg shadow-indigo-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 select-none mt-2"
+                              className="w-full py-2 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-lg shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 select-none mt-1 active:scale-[0.98]"
                             >
                               {isLoading ? (
-                                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                               ) : (
                                 <>
                                   <span>Verify & Sign In</span>
-                                  <ArrowRight className="w-4 h-4" />
+                                  <ArrowRight className="w-3.5 h-3.5" />
                                 </>
                               )}
                             </button>
@@ -568,27 +565,27 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                 {tab === 'reset' && (
                   <motion.div
                     key="reset"
-                    initial={{ opacity: 0, y: 6 }}
+                    initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.15 }}
-                    className="space-y-4"
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.12 }}
+                    className="space-y-2.5"
                   >
                     {!resetSent ? (
-                      <form onSubmit={handleRequestResetOtp} noValidate={apiMode === 'demo'} className="space-y-4">
-                        <div className="space-y-1.5 text-left">
-                          <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                      <form onSubmit={handleRequestResetOtp} noValidate={apiMode === 'demo'} className="space-y-2.5">
+                        <div className="space-y-0.5 text-left">
+                          <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                             <span>REGISTERED EMAIL</span>
                             <span className="text-rose-500 font-black">*</span>
                           </label>
                           <div className="relative">
-                            <Mail className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
+                            <Mail className="absolute left-2.5 top-2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
                             <input
                               type="email"
                               placeholder="user@example.com"
                               value={forgotEmail}
                               onChange={(e) => setForgotEmail(e.target.value)}
-                              className="w-full pl-10 pr-4 py-2.5 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                              className="w-full pl-8 pr-3 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all shadow-inner"
                             />
                           </div>
                         </div>
@@ -596,21 +593,21 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                         <button
                           type="submit"
                           disabled={isSendingReset}
-                          className="w-full py-3 px-4 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 rounded-xl shadow-lg shadow-indigo-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 select-none mt-2"
+                          className="w-full py-2 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-lg shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 select-none mt-1 active:scale-[0.98]"
                         >
                           {isSendingReset ? (
-                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           ) : (
                             <>
                               <span>Send Reset Code</span>
-                              <ArrowRight className="w-4 h-4" />
+                              <ArrowRight className="w-3.5 h-3.5" />
                             </>
                           )}
                         </button>
                       </form>
                     ) : (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between text-xs text-zinc-400">
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between text-[11px] text-zinc-400">
                           <span>
                             Code sent to <span className="font-semibold text-zinc-200">{forgotEmail}</span>
                           </span>
@@ -626,7 +623,7 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                           </button>
                         </div>
 
-                        <form onSubmit={handleForgotPassword} className="space-y-3">
+                        <form onSubmit={handleForgotPassword} className="space-y-2">
                           <FoldingOtpInput
                             value={forgotOtp}
                             onChange={setForgotOtp}
@@ -640,11 +637,11 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                           />
 
                           {apiMode === 'demo' && !isResetOtpAccepted && (
-                            <div className="flex justify-end -mt-1">
+                            <div className="flex justify-end -mt-0.5">
                               <button
                                 type="button"
                                 onClick={() => setForgotOtp('123456')}
-                                className="text-[11px] font-mono text-amber-400/90 hover:text-amber-300 cursor-pointer"
+                                className="text-[10px] font-mono text-amber-400/90 hover:text-amber-300 cursor-pointer"
                               >
                                 Fill demo code: 123456
                               </button>
@@ -653,26 +650,26 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
 
                           {!isResetOtpAccepted && (
                             <>
-                              <div className="space-y-1.5 text-left pt-1">
-                                <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                              <div className="space-y-0.5 text-left pt-1">
+                                <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                                   <span>NEW PASSWORD</span>
                                   <span className="text-rose-500 font-black">*</span>
                                 </label>
                                 <div className="relative">
-                                  <Lock className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
+                                  <Lock className="absolute left-2.5 top-2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
                                   <input
                                     type={showResetPassword ? 'text' : 'password'}
                                     placeholder="At least 6 characters"
                                     value={forgotPasswordInput}
                                     onChange={(e) => setForgotPasswordInput(e.target.value)}
-                                    className="w-full pl-10 pr-10 py-2.5 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                                    className="w-full pl-8 pr-8 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all shadow-inner"
                                   />
                                   <button
                                     type="button"
                                     onClick={() => setShowResetPassword(!showResetPassword)}
-                                    className="absolute right-3.5 top-3 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                                    className="absolute right-2.5 top-2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
                                   >
-                                    {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    {showResetPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                                   </button>
                                 </div>
                               </div>
@@ -680,14 +677,14 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                               <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full py-3 px-4 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 rounded-xl shadow-lg shadow-indigo-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 select-none mt-2"
+                                className="w-full py-2 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-lg shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 select-none mt-1 active:scale-[0.98]"
                               >
                                 {isLoading ? (
-                                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                 ) : (
                                   <>
                                     <span>Update & Sign In</span>
-                                    <ArrowRight className="w-4 h-4" />
+                                    <ArrowRight className="w-3.5 h-3.5" />
                                   </>
                                 )}
                               </button>
@@ -701,13 +698,13 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
               </AnimatePresence>
 
               {/* Bottom Switch to Register */}
-              <div className="mt-6 pt-4 border-t border-zinc-800/80 text-center">
-                <p className="text-xs text-zinc-400">
+              <div className="mt-2.5 pt-2 border-t border-white/10 text-center">
+                <p className="text-[11px] text-zinc-400">
                   Don't have an account?{' '}
                   <button
                     type="button"
                     onClick={() => onNavigate('/signup')}
-                    className="font-bold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer ml-1"
+                    className="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer ml-1"
                   >
                     Create account
                   </button>

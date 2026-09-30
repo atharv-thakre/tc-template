@@ -27,39 +27,9 @@ import { getErrorMessage } from '../services/apiClient';
 import { ApiConfigModal } from '../components/common/ApiConfigModal';
 import { ServerSettingsButton } from '../components/auth/ServerSettingsButton';
 import { SITE_VERSION_LABEL } from '../config/version';
-import { DecryptedText } from '../components/reactbits/DecryptedText';
-import InfiniteMenu from '../components/InfiniteMenu/InfiniteMenu';
-
-const tcAuthMenuItems = [
-  {
-    image:
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
-    link: '#',
-    title: 'Password',
-    description: 'Secure credential authentication',
-  },
-  {
-    image:
-      'https://images.unsplash.com/photo-1614680376593-902f749f7ffc?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
-    link: '#',
-    title: 'Passwordless',
-    description: 'Magic links and OTP verification',
-  },
-  {
-    image:
-      'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
-    link: '#',
-    title: 'OAuth',
-    description: 'Google, GitHub and Discord',
-  },
-  {
-    image:
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
-    link: '#',
-    title: 'Sessions',
-    description: 'Secure account and session control',
-  },
-];
+import LineWaves from '../components/reactbits/LineWaves';
+import AccordionGallery from '../components/reactbits/AccordionGallery';
+import { AUTH_ACCORDION_ITEMS } from '../config/accordionItems';
 
 const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -195,82 +165,111 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#080a11] text-white relative overflow-x-hidden flex flex-col justify-between">
-      {/* Background Cosmic Lighting & Grid */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[140px]" />
-        <div className="absolute -bottom-40 -left-20 w-[700px] h-[700px] bg-gradient-to-tr from-blue-600/25 via-indigo-600/20 to-purple-600/20 rounded-full blur-[160px]" />
-        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-purple-900/15 rounded-full blur-[150px]" />
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-            backgroundSize: '40px 40px',
-          }}
-        />
-      </div>
+    <div className="h-screen max-h-screen w-full bg-[var(--bg-primary)] text-[var(--text-primary)] relative overflow-hidden flex flex-col justify-between select-none">
+      {/* LineWaves OGL Motion Background - Softer, smoother intensity */}
+      <LineWaves
+        speed={0.22}
+        innerLineCount={32}
+        outerLineCount={36}
+        warpIntensity={0.8}
+        rotation={-45}
+        edgeFadeWidth={0}
+        colorCycleSpeed={1}
+        brightness={0.11}
+        color1="#6366f1"
+        color2="#818cf8"
+        color3="#a5b4fc"
+        enableMouseInteraction
+        mouseInfluence={2}
+      />
+
+      {/* Subtle radial vignette overlay to blend background gracefully */}
+      <div className="absolute inset-0 bg-radial-[at_50%_50%] from-transparent via-[var(--bg-primary)]/40 to-[var(--bg-primary)]/90 pointer-events-none z-0" />
 
       {/* Main Split Layout */}
-      <div className="relative z-10 w-full flex-1 flex flex-col lg:flex-row min-h-screen">
-        {/* Left Half: Full-Bleed InfiniteMenu covering entire left side of screen */}
-        <div className="hidden lg:block lg:w-[50%] xl:w-[54%] min-h-screen relative overflow-hidden bg-transparent">
-          <div className="absolute inset-0 w-full h-full overflow-hidden">
-            <InfiniteMenu items={tcAuthMenuItems} scale={1.25} />
+      <div className="relative z-10 w-full flex-1 flex flex-col lg:flex-row h-full max-h-screen overflow-hidden">
+        {/* Left Side: React Bits AccordionGallery (Expanded top, bottom, and right) */}
+        <div className="hidden lg:flex lg:w-[60%] xl:w-[65%] 2xl:w-[68%] h-full relative items-center justify-center p-3 sm:p-4 lg:p-5 select-none overflow-hidden">
+          <div className="w-full h-full relative flex items-center">
+            <AccordionGallery
+              items={AUTH_ACCORDION_ITEMS}
+              defaultIndex={2}
+              expandRatio={0.52}
+              trigger="hover"
+              accentColor="#818cf8"
+              overlayColor="#07090e"
+              textColor="#ffffff"
+              grayscale={true}
+              tilt={6}
+              parallax={0.4}
+              gap={10}
+              radius={16}
+              height="100%"
+            />
           </div>
         </div>
 
-        {/* Right Half: Centered Auth Card Form */}
-        <div className="w-full lg:w-[50%] xl:w-[46%] min-h-screen flex flex-col justify-center items-center px-4 sm:px-8 lg:px-12 py-8 relative">
+        {/* Right Half: Centered Clean Auth Card Form */}
+        <div className="w-full lg:w-[40%] xl:w-[35%] 2xl:w-[32%] h-full overflow-y-auto lg:overflow-hidden flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-2 relative">
           {/* Mobile Header (Shown on small screens) */}
-          <div className="lg:hidden flex items-center justify-between w-full max-w-[440px] pb-6 select-none">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
-                <KeyRound className="w-4 h-4" />
+          <div className="lg:hidden flex items-center justify-between w-full max-w-[400px] pb-2 select-none">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm">
+                <KeyRound className="w-3.5 h-3.5" />
               </div>
               <div>
-                <span className="text-lg font-black tracking-tight text-white">tc-auth</span>
-                <p className="text-[10px] text-zinc-400">Auth Engine</p>
+                <span className="text-sm font-bold tracking-tight text-white">tc-auth</span>
+                <p className="text-[8px] text-zinc-400">Auth Engine</p>
               </div>
             </div>
 
             <ServerSettingsButton onClick={() => setIsConfigModalOpen(true)} />
           </div>
 
-          {/* Desktop Server Settings Pill (Top right above card) */}
-          <div className="hidden lg:flex justify-end w-full max-w-[440px] mb-4">
+          {/* Desktop Header (Top above card) */}
+          <div className="hidden lg:flex justify-between items-center w-full max-w-[400px] mb-1.5 select-none">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm">
+                <KeyRound className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <span className="text-sm font-bold tracking-tight text-white">tc-auth</span>
+                <p className="text-[8px] text-zinc-400">Auth Engine</p>
+              </div>
+            </div>
             <ServerSettingsButton onClick={() => setIsConfigModalOpen(true)} />
           </div>
 
-          {/* The Authentication Card */}
-          <div className="w-full max-w-[440px] bg-[#0e111a]/90 border border-zinc-800/90 rounded-[28px] p-7 sm:p-9 shadow-2xl shadow-black/90 backdrop-blur-xl relative overflow-hidden transition-all">
+          {/* Beautifully Blended Glassmorphism Authentication Card */}
+          <div className="w-full max-w-[400px] p-4 sm:p-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] rounded-2xl border border-white/10 bg-[#0c0e15]/65 backdrop-blur-2xl relative ring-1 ring-white/5">
               {apiMode === 'demo' ? (
                 /* Demo Mode Warning */
-                <div className="text-center space-y-5 py-4 animate-in fade-in duration-200">
-                  <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto shadow-inner">
-                    <AlertCircle className="w-7 h-7" />
+                <div className="text-center space-y-3 py-2 animate-in fade-in duration-200">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto shadow-inner">
+                    <AlertCircle className="w-5 h-5" />
                   </div>
-                  <div className="space-y-1.5">
-                    <h2 className="text-2xl font-extrabold text-white">Live Server Required</h2>
-                    <p className="text-xs text-zinc-400 leading-relaxed">
+                  <div className="space-y-1">
+                    <h2 className="text-lg font-extrabold text-white">Live Server Required</h2>
+                    <p className="text-[11px] text-zinc-400 leading-relaxed">
                       Account registration is disabled in Demo Mock Mode. Switch to Live Server mode to register new accounts.
                     </p>
                   </div>
-                  <div className="pt-2 space-y-2.5">
+                  <div className="pt-1 space-y-2">
                     <button
                       type="button"
                       onClick={() => {
                         setApiMode('live');
                         toast.success('Switched to Live Server mode');
                       }}
-                      className="w-full py-3 px-4 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 rounded-xl shadow-lg shadow-indigo-600/35 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full py-2 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-lg shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
                     >
-                      <Zap className="w-4 h-4" />
+                      <Zap className="w-3.5 h-3.5" />
                       <span>Switch to Live Server Mode</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => onNavigate('/login')}
-                      className="w-full py-2.5 px-4 text-xs font-semibold text-zinc-400 hover:text-white bg-[#080a10] hover:bg-zinc-800/80 rounded-xl transition-all cursor-pointer border border-zinc-800"
+                      className="w-full py-1.5 px-3 text-xs font-semibold text-zinc-300 hover:text-white bg-black/40 hover:bg-white/10 rounded-lg transition-all cursor-pointer border border-white/10 backdrop-blur-md"
                     >
                       Return to Sign In
                     </button>
@@ -280,33 +279,35 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
                 /* Live Registration Form */
                 <>
                   {/* Card Top Avatar Icon */}
-                  <div className="text-center mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-3 shadow-inner">
-                      <UserPlus className="w-6 h-6" />
+                  <div className="text-center mb-2">
+                    <div className="w-8 h-8 rounded-xl bg-white/[0.06] border border-white/10 text-zinc-200 flex items-center justify-center mx-auto mb-1 shadow-inner backdrop-blur-md">
+                      <UserPlus className="w-4 h-4 text-zinc-200" />
                     </div>
-                    <h2 className="text-2xl font-extrabold text-white tracking-tight">Create Account</h2>
-                    <p className="text-xs text-zinc-400 mt-1">Get started with secure authentication.</p>
+                    <h2 className="text-lg font-bold text-white tracking-tight">Create Account</h2>
+                    <p className="text-[10.5px] text-zinc-400 mt-0.5">Get started with secure authentication.</p>
                   </div>
 
                   {/* SSO Buttons */}
-                  <div className="grid grid-cols-3 gap-2.5 mb-5">
+                  <div className="grid grid-cols-3 gap-1.5 mb-2">
                     <ProviderButton provider="google" short onSuccessNavigate={() => onNavigate('/profile')} />
                     <ProviderButton provider="github" short onSuccessNavigate={() => onNavigate('/profile')} />
                     <ProviderButton provider="discord" short onSuccessNavigate={() => onNavigate('/profile')} />
                   </div>
 
                   {/* Divider */}
-                  <div className="relative my-5">
+                  <div className="relative my-1.5">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-zinc-800/90" />
+                      <div className="w-full border-t border-white/10" />
                     </div>
-                    <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
-                      <span className="bg-[#0e111a] px-3 text-zinc-400">OR REGISTER WITH CREDENTIALS</span>
+                    <div className="relative flex justify-center text-[8.5px] uppercase font-bold tracking-wider">
+                      <span className="bg-[#0e1017]/85 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/5 text-zinc-400">
+                        OR REGISTER WITH CREDENTIALS
+                      </span>
                     </div>
                   </div>
 
                   {/* Mode Tabs */}
-                  <div className="relative flex p-1 mb-5 rounded-2xl bg-[#080a10] border border-zinc-800/90">
+                  <div className="relative flex p-0.5 mb-2 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md">
                     {(['password', 'email'] as const).map((t) => {
                       const isActive = tab === t;
                       const label = t === 'password' ? 'Direct Signup' : 'Verified (OTP)';
@@ -316,19 +317,19 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
                           key={t}
                           type="button"
                           onClick={() => setTab(t)}
-                          className={`relative flex-1 py-2 px-2 text-[11px] font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 z-10 select-none min-w-0 ${
+                          className={`relative flex-1 py-1.5 px-1.5 text-[10.5px] font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 z-10 select-none min-w-0 ${
                             isActive ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'
                           }`}
                         >
                           {isActive && (
                             <motion.div
                               layoutId="activeSignupTab"
-                              className="absolute inset-0 rounded-xl bg-indigo-600 shadow-md shadow-indigo-600/30 -z-10"
+                              className="absolute inset-0 rounded-lg bg-white/[0.08] border border-white/15 -z-10 shadow-sm backdrop-blur-md"
                               transition={{ type: 'spring', stiffness: 450, damping: 35 }}
                             />
                           )}
                           <Icon className="w-3.5 h-3.5 shrink-0" />
-                          <span className="whitespace-nowrap">{label}</span>
+                          <span className="whitespace-nowrap font-medium">{label}</span>
                         </button>
                       );
                     })}
@@ -339,100 +340,100 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
                     {tab === 'password' && (
                       <motion.form
                         key="password"
-                        initial={{ opacity: 0, y: 6 }}
+                        initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.15 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.12 }}
                         onSubmit={handleSubmit(onSubmitPassword)}
-                        className="space-y-3.5"
+                        className="space-y-1.5"
                       >
                         {/* Name */}
-                        <div className="space-y-1 text-left">
-                          <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                        <div className="space-y-0.5 text-left">
+                          <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                             <span>FULL NAME</span>
                             <span className="text-rose-500 font-black">*</span>
                           </label>
                           <div className="relative">
-                            <User className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
+                            <User className="absolute left-2.5 top-2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
                             <input
                               type="text"
                               placeholder="John Doe"
                               {...register('name')}
-                              className="w-full pl-10 pr-4 py-2 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                              className="w-full pl-8 pr-3 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all shadow-inner"
                             />
                           </div>
                           {errors.name?.message && (
-                            <p className="text-[11px] text-rose-400 mt-1">{errors.name.message}</p>
+                            <p className="text-[9.5px] text-rose-400 mt-0.5">{errors.name.message}</p>
                           )}
                         </div>
 
                         {/* Username / Handle */}
-                        <div className="space-y-1 text-left">
-                          <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                        <div className="space-y-0.5 text-left">
+                          <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                             <span>USERNAME / HANDLE</span>
                             <span className="text-rose-500 font-black">*</span>
                           </label>
                           <div className="relative">
-                            <span className="absolute left-3.5 top-2.5 text-sm font-mono text-zinc-500 pointer-events-none">
+                            <span className="absolute left-2.5 top-1.5 text-xs font-mono text-zinc-500 pointer-events-none">
                               @
                             </span>
                             <input
                               type="text"
                               placeholder="username"
                               {...register('handle')}
-                              className="w-full pl-9 pr-4 py-2 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors font-mono text-xs"
+                              className="w-full pl-8 pr-3 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all font-mono shadow-inner"
                             />
                           </div>
                           {errors.handle?.message && (
-                            <p className="text-[11px] text-rose-400 mt-1">{errors.handle.message}</p>
+                            <p className="text-[9.5px] text-rose-400 mt-0.5">{errors.handle.message}</p>
                           )}
                         </div>
 
                         {/* Email */}
-                        <div className="space-y-1 text-left">
-                          <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                        <div className="space-y-0.5 text-left">
+                          <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                             <span>EMAIL ADDRESS</span>
                             <span className="text-rose-500 font-black">*</span>
                           </label>
                           <div className="relative">
-                            <Mail className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
+                            <Mail className="absolute left-2.5 top-2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
                             <input
                               type="email"
                               placeholder="user@example.com"
                               {...register('email')}
-                              className="w-full pl-10 pr-4 py-2 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                              className="w-full pl-8 pr-3 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all shadow-inner"
                             />
                           </div>
                           {errors.email?.message && (
-                            <p className="text-[11px] text-rose-400 mt-1">{errors.email.message}</p>
+                            <p className="text-[9.5px] text-rose-400 mt-0.5">{errors.email.message}</p>
                           )}
                         </div>
 
                         {/* Password */}
-                        <div className="space-y-1 text-left">
-                          <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                        <div className="space-y-0.5 text-left">
+                          <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                             <span>PASSWORD</span>
                             <span className="text-rose-500 font-black">*</span>
                           </label>
                           <div className="relative">
-                            <Lock className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
+                            <Lock className="absolute left-2.5 top-2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
                             <input
                               type={showPassword ? 'text' : 'password'}
                               placeholder="At least 6 characters"
                               {...register('password')}
-                              className="w-full pl-10 pr-10 py-2 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                              className="w-full pl-8 pr-8 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all shadow-inner"
                             />
                             <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3.5 top-2.5 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                              className="absolute right-2.5 top-2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
                               title={showPassword ? 'Hide password' : 'Show password'}
                             >
-                              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                             </button>
                           </div>
                           {errors.password?.message && (
-                            <p className="text-[11px] text-rose-400 mt-1">{errors.password.message}</p>
+                            <p className="text-[9.5px] text-rose-400 mt-0.5">{errors.password.message}</p>
                           )}
                         </div>
 
@@ -440,14 +441,14 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
                         <button
                           type="submit"
                           disabled={isLoading}
-                          className="w-full py-3 px-4 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 rounded-xl shadow-lg shadow-indigo-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 select-none mt-4"
+                          className="w-full py-2 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-lg shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 select-none mt-1.5 active:scale-[0.98]"
                         >
                           {isLoading ? (
-                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           ) : (
                             <>
                               <span>Create Account</span>
-                              <ArrowRight className="w-4 h-4" />
+                              <ArrowRight className="w-3.5 h-3.5" />
                             </>
                           )}
                         </button>
@@ -458,89 +459,89 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
                     {tab === 'email' && (
                       <motion.div
                         key="email"
-                        initial={{ opacity: 0, y: 6 }}
+                        initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.15 }}
-                        className="space-y-3.5"
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.12 }}
+                        className="space-y-2 text-left"
                       >
                         {isPreVerified && (
-                          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[10.5px] flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                             <span>Email verified! Complete details to register.</span>
                           </div>
                         )}
 
-                        <div className="space-y-3">
-                          <div className="space-y-1 text-left">
-                            <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                        <div className="space-y-1.5">
+                          <div className="space-y-0.5 text-left">
+                            <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                               <span>FULL NAME</span>
                               <span className="text-rose-500 font-black">*</span>
                             </label>
                             <div className="relative">
-                              <User className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
+                              <User className="absolute left-2.5 top-2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
                               <input
                                 type="text"
                                 placeholder="John Doe"
                                 {...register('name')}
-                                className="w-full pl-10 pr-4 py-2 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                                className="w-full pl-8 pr-3 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all shadow-inner"
                               />
                             </div>
                           </div>
 
-                          <div className="space-y-1 text-left">
-                            <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                          <div className="space-y-0.5 text-left">
+                            <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                               <span>USERNAME / HANDLE</span>
                               <span className="text-rose-500 font-black">*</span>
                             </label>
                             <div className="relative">
-                              <span className="absolute left-3.5 top-2.5 text-sm font-mono text-zinc-500 pointer-events-none">
+                              <span className="absolute left-2.5 top-1.5 text-xs font-mono text-zinc-500 pointer-events-none">
                                 @
                               </span>
                               <input
                                 type="text"
                                 placeholder="username"
                                 {...register('handle')}
-                                className="w-full pl-9 pr-4 py-2 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors font-mono text-xs"
+                                className="w-full pl-8 pr-3 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all font-mono shadow-inner"
                               />
                             </div>
                           </div>
 
-                          <div className="space-y-1 text-left">
-                            <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                          <div className="space-y-0.5 text-left">
+                            <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                               <span>EMAIL ADDRESS</span>
                               <span className="text-rose-500 font-black">*</span>
                             </label>
                             <div className="relative">
-                              <Mail className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
+                              <Mail className="absolute left-2.5 top-2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
                               <input
                                 type="email"
                                 placeholder="user@example.com"
                                 {...register('email')}
-                                className="w-full pl-10 pr-4 py-2 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                                className="w-full pl-8 pr-3 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all shadow-inner"
                               />
                             </div>
                           </div>
 
-                          <div className="space-y-1 text-left">
-                            <label className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
+                          <div className="space-y-0.5 text-left">
+                            <label className="text-[9.5px] font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-1">
                               <span>PASSWORD</span>
                               <span className="text-rose-500 font-black">*</span>
                             </label>
                             <div className="relative">
-                              <Lock className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
+                              <Lock className="absolute left-2.5 top-2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
                               <input
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="At least 6 characters"
                                 {...register('password')}
-                                className="w-full pl-10 pr-10 py-2 text-sm bg-[#080a10] border border-zinc-800/90 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                                className="w-full pl-8 pr-8 py-1.5 text-xs bg-black/35 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-md transition-all shadow-inner"
                               />
                               <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3.5 top-2.5 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                                className="absolute right-2.5 top-2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
                               >
-                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                               </button>
                             </div>
                           </div>
@@ -551,19 +552,19 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
                             type="button"
                             onClick={handleSendEmailAuth}
                             disabled={isSendingOtp}
-                            className="w-full py-3 px-4 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 rounded-xl shadow-lg shadow-indigo-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 select-none mt-3"
+                            className="w-full py-2 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-lg shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 select-none mt-1.5 active:scale-[0.98]"
                           >
                             {isSendingOtp ? (
-                              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                             ) : (
                               <>
                                 <span>Send Verification Code</span>
-                                <ArrowRight className="w-4 h-4" />
+                                <ArrowRight className="w-3.5 h-3.5" />
                               </>
                             )}
                           </button>
                         ) : (
-                          <div className="space-y-3 pt-2">
+                          <div className="space-y-2 pt-0.5">
                             {!isPreVerified && (
                               <FoldingOtpInput
                                 value={otpCode}
@@ -587,26 +588,26 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
                                 type="button"
                                 onClick={() => handleVerifyAndSignupOtp()}
                                 disabled={isLoading}
-                                className="w-full py-3 px-4 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 rounded-xl shadow-lg shadow-indigo-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 select-none mt-3"
+                                className="w-full py-2 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-lg shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 select-none mt-1.5 active:scale-[0.98]"
                               >
                                 {isLoading ? (
-                                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                 ) : (
                                   <>
                                     <span>Complete Registration</span>
-                                    <ArrowRight className="w-4 h-4" />
+                                    <ArrowRight className="w-3.5 h-3.5" />
                                   </>
                                 )}
                               </button>
                             )}
 
                             {!isPreVerified && !isOtpAccepted && (
-                              <div className="pt-1 text-center">
+                              <div className="pt-0.5 text-center">
                                 <button
                                   type="button"
                                   onClick={() => handleSendEmailAuth()}
                                   disabled={isSendingOtp}
-                                  className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer underline disabled:opacity-50"
+                                  className="text-[10.5px] text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer underline disabled:opacity-50"
                                 >
                                   {isSendingOtp ? 'Resending...' : "Didn't receive code? Resend"}
                                 </button>
@@ -621,13 +622,13 @@ export const SignupPage: React.FC<{ onNavigate: (path: string) => void }> = ({ o
               )}
 
               {/* Bottom Switch to Login */}
-              <div className="mt-6 pt-4 border-t border-zinc-800/80 text-center">
-                <p className="text-xs text-zinc-400">
+              <div className="mt-2 pt-2 border-t border-white/10 text-center">
+                <p className="text-[10.5px] text-zinc-400">
                   Already have an account?{' '}
                   <button
                     type="button"
                     onClick={() => onNavigate('/login')}
-                    className="font-bold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer ml-1"
+                    className="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer ml-0.5"
                   >
                     Sign in
                   </button>
