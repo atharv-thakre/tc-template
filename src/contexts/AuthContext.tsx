@@ -74,7 +74,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const fetchCurrentUser = async () => {
+  const isFetchingRef = React.useRef(false);
+
+  const fetchCurrentUser = async (force = false) => {
     const currentToken = tokenStorage.getAccessToken();
     if (!currentToken) {
       setAccount(null);
@@ -84,8 +86,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    if (isFetchingRef.current && !force) {
+      return;
+    }
+    isFetchingRef.current = true;
+
     try {
-      const meData = await profileService.getMe();
+      const meData = await profileService.getMe(force);
       if (meData?.account) {
         setAccount(meData.account);
         setSession(meData.session || null);
@@ -96,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       clearAuthAndRedirectToLogin();
     } finally {
+      isFetchingRef.current = false;
       setIsLoading(false);
     }
   };
@@ -106,53 +114,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginPassword = async (input: LoginPasswordInput) => {
     const res = await authService.loginPassword(input);
+    if (res.account) {
+      setAccount(res.account);
+    }
     setToken(res.access_token);
-    setAccount(res.account);
-    await fetchCurrentUser();
   };
 
   const loginOTP = async (input: LoginOTPInput) => {
     const res = await authService.loginOTP(input);
+    if (res.account) {
+      setAccount(res.account);
+    }
     setToken(res.access_token);
-    setAccount(res.account);
-    await fetchCurrentUser();
   };
 
   const loginMagicLink = async (input: { email: string; otp: string }) => {
     const res = await authService.verifyMagicLink('login', input);
+    if (res.account) {
+      setAccount(res.account);
+    }
     setToken(res.access_token);
-    setAccount(res.account);
-    await fetchCurrentUser();
   };
 
   const signupPassword = async (input: SignupPasswordInput) => {
     const res = await authService.signupPassword(input);
+    if (res.account) {
+      setAccount(res.account);
+    }
     setToken(res.access_token);
-    setAccount(res.account);
-    await fetchCurrentUser();
   };
 
   const signupOTP = async (input: SignupOTPInput) => {
     const res = await authService.signupOTP(input);
+    if (res.account) {
+      setAccount(res.account);
+    }
     setToken(res.access_token);
-    setAccount(res.account);
-    await fetchCurrentUser();
   };
 
   const forgotPassword = async (input: ForgotPasswordInput) => {
     const res = await authService.forgotPassword(input);
+    if (res.account) {
+      setAccount(res.account);
+    }
     setToken(res.access_token);
-    setAccount(res.account);
-    await fetchCurrentUser();
   };
 
   const loginOAuth = async (provider: 'google' | 'github' | 'discord') => {
     // In demo mode mock OAuth response
     const mockEmail = `demo_${provider}@tcauth.dev`;
     const res = await authService.loginPassword({ identifier: mockEmail, password: 'password123' });
+    if (res.account) {
+      setAccount(res.account);
+    }
     setToken(res.access_token);
-    setAccount(res.account);
-    await fetchCurrentUser();
   };
 
   const patchMe = async (input: PatchMeInput) => {

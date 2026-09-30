@@ -153,6 +153,7 @@ export function clearAllTokensAndCookies() {
   tokenStorage.clearTokens();
   clearAllCookies();
   cleanUrlTokens();
+  clearApiCache();
 }
 
 export type ApiMode = 'demo' | 'live';
@@ -567,8 +568,50 @@ export function generateCandidateEndpoints(endpoints: string[], _targetBaseUrl?:
   return result;
 }
 
+// In-flight promise cache: deduplicates concurrent identical requests
+const inFlightRequests = new Map<string, Promise<any>>();
+
+// Short-term response cache with TTL (Time To Live in ms)
+interface CachedResponse<T = any> {
+  data: T;
+  expiresAt: number;
+}
+const apiResponseCache = new Map<string, CachedResponse>();
+
+// Remembers working candidate endpoints per method+route set to avoid fallback overhead
+const workingEndpointCache = new Map<string, string>();
+
+/**
+ * Clears or invalidates cached responses.
+ * If pattern is provided, invalidates keys containing that pattern (e.g. '/me', '/oauth').
+ */
+export function invalidateApiCache(pattern?: string) {
+  if (!pattern) {
+    apiResponseCache.clear();
+    inFlightRequests.clear();
+    return;
+  }
+  for (const key of Array.from(apiResponseCache.keys())) {
+    if (key.includes(pattern)) {
+      apiResponseCache.delete(key);
+    }
+  }
+  for (const key of Array.from(inFlightRequests.keys())) {
+    if (key.includes(pattern)) {
+      inFlightRequests.delete(key);
+    }
+  }
+}
+
+export function clearApiCache() {
+  apiResponseCache.clear();
+  inFlightRequests.clear();
+  workingEndpointCache.clear();
+}
+
 /**
  * Tries multiple endpoint paths sequentially until one succeeds, handling 404/405 route variations across different backend implementations.
+ * Includes in-flight deduplication, working endpoint memory, and TTL caching to prevent repeated redundant calls.
  */
 export async function requestWithFallback<T>(
   method: 'get' | 'post' | 'put' | 'patch' | 'delete',
@@ -581,48 +624,77 @@ export async function requestWithFallback<T>(
   }
 
   const currentBase = getCustomBaseUrl();
-  const candidates = generateCandidateEndpoints(endpoints, currentBase);
-  let lastError: any;
 
-  for (const ep of candidates) {
-    try {
-      if (method === 'get') {
-        const res = await apiClient.get<T>(ep, payloadOrConfig);
-        return res.data;
-      } else if (method === 'post') {
-        const res = await apiClient.post<T>(ep, payloadOrConfig, config);
-        return res.data;
-      } else if (method === 'put') {
-        const res = await apiClient.put<T>(ep, payloadOrConfig, config);
-        return res.data;
-      } else if (method === 'patch') {
-        const res = await apiClient.patch<T>(ep, payloadOrConfig, config);
-        return res.data;
-      } else if (method === 'delete') {
-        const axiosConfig = payloadOrConfig
-          ? payloadOrConfig.data !== undefined
-            ? payloadOrConfig
-            : { data: payloadOrConfig }
-          : undefined;
-        const res = await apiClient.delete<T>(ep, axiosConfig);
-        return res.data;
-      }
-    } catch (err: any) {
-      lastError = err;
-      // If 404, 405, or 307/308 redirect, try next candidate
-      if (
-        err.response?.status === 404 ||
-        err.response?.status === 405 ||
-        err.response?.status === 307 ||
-        err.response?.status === 308
-      ) {
-        continue;
-      }
-      // For other status codes (e.g., 400, 401, 422, 500), throw directly
-      throw err;
+  // Invalidate cache on mutations
+  if (method !== 'get') {
+    const combined = endpoints.join(',');
+    if (combined.includes('me')) {
+      invalidateApiCache('me');
+    }
+    if (combined.includes('oauth') || combined.includes('link')) {
+      invalidateApiCache('oauth');
+      invalidateApiCache('link');
     }
   }
-  throw lastError;
+
+  // Caching & Deduplication logic for GET requests
+  const isGet = method === 'get';
+  const cacheKey = isGet
+    ? `${currentBase}|get|${endpoints.slice().sort().join(',')}|${JSON.stringify(payloadOrConfig || {})}`
+    : '';
+
+  if (isGet && cacheKey) {
+    // 1. Check TTL cache
+    const cached = apiResponseCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.data as T;
+    }
+
+    // 2. Check in-flight promise deduplication
+    const existingInFlight = inFlightRequests.get(cacheKey);
+    if (existingInFlight) {
+      return existingInFlight as Promise<T>;
+    }
+  }
+
+  const executeRequest = async (): Promise<T> => {
+    // Direct single endpoint execution - no fallbacks, no candidate loops
+    const targetEndpoint = endpoints[0] || '/';
+
+    if (method === 'get') {
+      const res = await apiClient.get<T>(targetEndpoint, payloadOrConfig);
+      return res.data;
+    } else if (method === 'post') {
+      const res = await apiClient.post<T>(targetEndpoint, payloadOrConfig, config);
+      return res.data;
+    } else if (method === 'put') {
+      const res = await apiClient.put<T>(targetEndpoint, payloadOrConfig, config);
+      return res.data;
+    } else if (method === 'patch') {
+      const res = await apiClient.patch<T>(targetEndpoint, payloadOrConfig, config);
+      return res.data;
+    } else if (method === 'delete') {
+      const axiosConfig = payloadOrConfig
+        ? payloadOrConfig.data !== undefined
+          ? payloadOrConfig
+          : { data: payloadOrConfig }
+        : undefined;
+      const res = await apiClient.delete<T>(targetEndpoint, axiosConfig);
+      return res.data;
+    } else {
+      throw new Error(`Unsupported method: ${method}`);
+    }
+  };
+
+  if (isGet && cacheKey) {
+    const requestPromise = executeRequest().finally(() => {
+      inFlightRequests.delete(cacheKey);
+    });
+    inFlightRequests.set(cacheKey, requestPromise);
+    return requestPromise;
+  }
+
+  return executeRequest();
 }
 
 export interface ApiErrorDetails {

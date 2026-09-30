@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Sparkles, UserPlus, CheckCircle2, AlertTriangle, ArrowRight, Eye, EyeOff, Lock, User, AtSign, Loader2 } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertTriangle, ArrowRight, Eye, EyeOff, Lock, User, AtSign, RotateCcw } from 'lucide-react';
 import { authService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import { getErrorMessage } from '../../services/apiClient';
@@ -33,10 +33,23 @@ export const MagicLinkSignupPage: React.FC<MagicLinkSignupPageProps> = ({ onNavi
   const { refetchMe } = useAuth();
   const [email, setEmail] = useState<string>('');
   const [otp, setOtp] = useState<string>('');
-  const [isVerified, setIsVerified] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<FinishSignupData>({
+    resolver: zodResolver(finishSignupSchema),
+    defaultValues: {
+      name: '',
+      handle: '',
+      password: '',
+    },
+  });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -48,28 +61,17 @@ export const MagicLinkSignupPage: React.FC<MagicLinkSignupPageProps> = ({ onNavi
 
     const emailParam = params.get('email') || '';
     const otpParam = params.get('otp') || '';
-    const verifiedParam = params.get('verified') === 'true';
 
     setEmail(emailParam);
     setOtp(otpParam);
-    setIsVerified(verifiedParam || Boolean(emailParam && otpParam));
-  }, []);
 
-  const defaultHandle = email ? email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').slice(0, 15) : '';
-  const defaultName = email ? email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1) : '';
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FinishSignupData>({
-    resolver: zodResolver(finishSignupSchema),
-    defaultValues: {
-      name: defaultName,
-      handle: defaultHandle,
-      password: '',
-    },
-  });
+    if (emailParam) {
+      const defaultHandle = emailParam.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').slice(0, 15);
+      const defaultName = emailParam.split('@')[0].charAt(0).toUpperCase() + emailParam.split('@')[0].slice(1);
+      setValue('name', defaultName);
+      setValue('handle', defaultHandle);
+    }
+  }, [setValue]);
 
   const onSubmit = async (data: FinishSignupData) => {
     if (!email || !otp) {
@@ -110,7 +112,7 @@ export const MagicLinkSignupPage: React.FC<MagicLinkSignupPageProps> = ({ onNavi
         <div className="text-center mb-5">
           <h2 className="text-xl font-bold text-white tracking-tight">Complete Registration</h2>
           <p className="text-xs text-zinc-400 mt-1">
-            Email verified via Magic Link. Choose your profile details to finish.
+            Email verified via Magic Link. Fill in your profile details once to finish.
           </p>
         </div>
 
@@ -132,15 +134,26 @@ export const MagicLinkSignupPage: React.FC<MagicLinkSignupPageProps> = ({ onNavi
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Verified Email Banner */}
+            {/* Locked Email Pill with Change Option */}
             <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 text-xs">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className="font-medium truncate max-w-[240px]">{email || 'Verified Email'}</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div className="min-w-0">
+                  <span className="text-[10px] text-emerald-400 font-bold block tracking-wider uppercase">
+                    LOCKED & VERIFIED EMAIL
+                  </span>
+                  <span className="font-medium truncate block text-white">{email || 'Verified Email'}</span>
+                </div>
               </div>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-900/50 px-2 py-0.5 rounded-full">
-                Verified
-              </span>
+              <button
+                type="button"
+                onClick={() => onNavigate('/signup')}
+                className="text-[10.5px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer shrink-0 ml-2 underline flex items-center gap-1"
+                title="Change email and send new OTP"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Change</span>
+              </button>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
@@ -152,7 +165,6 @@ export const MagicLinkSignupPage: React.FC<MagicLinkSignupPageProps> = ({ onNavi
                     type="text"
                     {...register('name')}
                     placeholder="Jane Doe"
-                    defaultValue={defaultName}
                     className="w-full pl-9 pr-3 py-1.5 text-xs bg-black/40 border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
@@ -167,48 +179,47 @@ export const MagicLinkSignupPage: React.FC<MagicLinkSignupPageProps> = ({ onNavi
                     type="text"
                     {...register('handle')}
                     placeholder="janedoe"
-                    defaultValue={defaultHandle}
-                    className="w-full pl-9 pr-3 py-1.5 text-xs bg-black/40 border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-3 py-1.5 text-xs bg-black/40 border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-mono"
                   />
                 </div>
                 {errors.handle && <p className="text-[10px] text-rose-400 mt-1">{errors.handle.message}</p>}
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-zinc-300 mb-1">Set Password</label>
+                <label className="block text-[11px] font-semibold text-zinc-300 mb-1">Account Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     {...register('password')}
-                    placeholder="••••••••"
+                    placeholder="At least 6 characters"
                     className="w-full pl-9 pr-9 py-1.5 text-xs bg-black/40 border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-200 cursor-pointer"
+                    className="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-200 cursor-pointer"
                   >
-                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
                 {errors.password && <p className="text-[10px] text-rose-400 mt-1">{errors.password.message}</p>}
-                <p className="text-[9px] text-zinc-500 mt-0.5">
-                  Must be at least 6 characters with uppercase, lowercase, and number.
-                </p>
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-2 px-3 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 rounded-lg shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 select-none mt-2"
+                className="w-full py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-indigo-600/20 transition-all mt-4"
               >
                 {isSubmitting ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Creating Account...</span>
+                  </>
                 ) : (
                   <>
-                    <UserPlus className="w-3.5 h-3.5" />
-                    <span>Complete Sign Up</span>
+                    <span>Finish Registration & Sign In</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
               </button>
