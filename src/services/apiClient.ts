@@ -220,6 +220,19 @@ export function deleteCustomPreset(id: string): void {
   localStorage.setItem(LOCAL_STORAGE_CUSTOM_PRESETS_KEY, JSON.stringify(filtered));
 }
 
+export function updateCustomPreset(id: string, name: string, url: string): void {
+  const cleanedUrl = normalizeBaseUrl(url);
+  const presets = getCustomPresets();
+  const updated = presets.map((p) =>
+    p.id === id ? { ...p, name: name.trim() || cleanedUrl, url: cleanedUrl } : p
+  );
+  localStorage.setItem(LOCAL_STORAGE_CUSTOM_PRESETS_KEY, JSON.stringify(updated));
+}
+
+export function getAllPresets(): ServerPreset[] {
+  return [...BUILTIN_PRESETS, ...getCustomPresets()];
+}
+
 export function getStoredApiMode(): ApiMode {
   const stored = localStorage.getItem(LOCAL_STORAGE_API_MODE_KEY);
   if (stored === 'live' || stored === 'demo') return stored;

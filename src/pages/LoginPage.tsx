@@ -689,6 +689,7 @@ export const LoginPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
       <ApiConfigModal
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
+        onNavigateToLogin={() => onNavigate('/login')}
       />
     </div>
   );

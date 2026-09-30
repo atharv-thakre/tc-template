@@ -171,6 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileSidebar, activePat
       <ApiConfigModal
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
+        onNavigateToLogin={() => onNavigate('/login')}
       />
     </>
   );

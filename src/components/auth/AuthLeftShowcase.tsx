@@ -1,102 +1,93 @@
 import React from 'react';
-import { ShieldCheck, Zap, Lock, CheckCircle2 } from 'lucide-react';
+import { KeyRound, ShieldCheck } from 'lucide-react';
 import { SITE_VERSION_LABEL } from '../../config/version';
 import { DecryptedText } from '../reactbits/DecryptedText';
+import { InfiniteMenu, InfiniteMenuItem } from '../reactbits/InfiniteMenu';
+
+const defaultMenuItems: InfiniteMenuItem[] = [
+  {
+    image:
+      'https://images.unsplash.com/photo-1782977389500-dd7adad33ebe?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
+    link: 'https://google.com/',
+    title: 'Zero-Trust Token Rotation',
+    description: 'Stateless signed cryptographic JWTs with automated refresh token revocation.',
+  },
+  {
+    image:
+      'https://images.unsplash.com/photo-1781499455083-6ccc3beb20cd?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
+    link: 'https://google.com/',
+    title: 'Passwordless & OTP Magic',
+    description: 'Instant 6-digit email OTP verification codes and passwordless magic links.',
+  },
+  {
+    image:
+      'https://images.unsplash.com/photo-1776394254711-4a0d7345269a?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
+    link: 'https://google.com/',
+    title: 'Global Session Governance',
+    description: 'Active device tracking with one-click cross-platform session invalidation.',
+  },
+  {
+    image:
+      'https://images.unsplash.com/photo-1781242629922-6f39cc3671cd?q=80&w=600&h=600&fit=crop&sat=-100&auto=format',
+    link: 'https://google.com/',
+    title: 'Enterprise OAuth & RBAC',
+    description: 'Unified social single sign-on with multi-tenant role-based access control.',
+  },
+];
 
 export const AuthLeftShowcase: React.FC = () => {
   return (
-    <div className="flex flex-col justify-between h-full py-4 lg:py-6 select-none max-w-xl">
+    <div className="flex flex-col justify-between h-full select-none max-w-xl space-y-6">
       {/* Brand Header */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 shrink-0">
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m21 2-2 2m-1.5 1.5L14 9M3 21l6.5-6.5" />
-              <path d="M19 5a4.24 4.24 0 0 0-6 0l-2 2a4.24 4.24 0 0 0 0 6l2 2a4.24 4.24 0 0 0 6 0l2-2a4.24 4.24 0 0 0 0-6Z" />
-            </svg>
+            <KeyRound className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-2xl font-black tracking-tight text-white">tc-auth</span>
               <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-zinc-800/90 text-zinc-400 border border-zinc-700/80 font-medium">
-                <DecryptedText text={SITE_VERSION_LABEL} speed={40} maxIterations={8} animateOn="hover" />
+                <DecryptedText
+                  text={SITE_VERSION_LABEL}
+                  speed={40}
+                  maxIterations={8}
+                  animateOn="hover"
+                />
               </span>
             </div>
             <p className="text-xs text-zinc-400 font-medium">Enterprise Authentication Engine</p>
           </div>
         </div>
 
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-950/80 border border-indigo-500/40 text-indigo-300 text-xs font-semibold shadow-sm">
-          <span className="text-indigo-400">✨</span>
-          <span>Next-Generation Identity Security</span>
-        </div>
-
-        {/* Hero Typography */}
-        <div className="space-y-3 pt-1">
-          <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-[1.12]">
-            Build With <br />
-            Confidence. <br />
+        {/* Hero Title */}
+        <div className="space-y-2">
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+            Next-Gen Identity &{' '}
             <span className="bg-gradient-to-r from-indigo-400 via-purple-300 to-indigo-200 bg-clip-text text-transparent">
-              Enterprise-Grade <br className="hidden sm:inline" />
-              Auth.
+              Security Infrastructure
             </span>
           </h1>
-          <p className="text-sm text-zinc-400 leading-relaxed max-w-lg">
-            Stateless signed tokens, single-use rotating refresh credentials, passwordless magic links, and granular cross-device session governance.
+          <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-lg">
+            Continuous auto-rotating cryptographic modules with stateless verification and zero-friction access.
           </p>
         </div>
+      </div>
 
-        {/* Feature Cards */}
-        <div className="space-y-3 pt-3">
-          {/* Card 1: Zero-Trust */}
-          <div className="p-4 rounded-2xl bg-[#0d1017]/80 border border-zinc-800/80 flex items-start gap-4 backdrop-blur-xs transition-colors hover:border-zinc-700/80">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-sm font-bold text-zinc-100">Zero-Trust Token Rotation</h2>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Multi-tier JWT architecture with automated refresh cycles and instant token revocation.
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2: Passwordless */}
-          <div className="p-4 rounded-2xl bg-[#0d1017]/80 border border-zinc-800/80 flex items-start gap-4 backdrop-blur-xs transition-colors hover:border-zinc-700/80">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 mt-0.5">
-              <Zap className="w-5 h-5" />
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-sm font-bold text-zinc-100">Passwordless & Social SSO</h2>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                High-security email 6-digit OTP codes, one-touch magic links, and Google, GitHub, and Discord OAuth.
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3: Governance */}
-          <div className="p-4 rounded-2xl bg-[#0d1017]/80 border border-zinc-800/80 flex items-start gap-4 backdrop-blur-xs transition-colors hover:border-zinc-700/80">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
-              <Lock className="w-5 h-5" />
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-sm font-bold text-zinc-100">Global Session Governance</h2>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Real-time active device tracking with one-click cross-platform session invalidation.
-              </p>
-            </div>
-          </div>
+      {/* Infinite Menu 3D Carousel (Restricted to left side column, height ~520px - 580px) */}
+      <div className="relative w-full rounded-3xl bg-[#0a0d16]/90 border border-zinc-800/90 shadow-2xl shadow-black/80 overflow-hidden backdrop-blur-md">
+        <div style={{ height: '480px', position: 'relative' }}>
+          <InfiniteMenu items={defaultMenuItems} scale={1.8} autoSpeed={0.55} />
         </div>
       </div>
 
       {/* Bottom Trust Badge */}
-      <div className="pt-8 border-t border-zinc-800/60 flex items-center justify-between text-xs text-zinc-400 font-medium">
+      <div className="pt-3 border-t border-zinc-800/60 flex items-center justify-between text-xs text-zinc-400 font-medium">
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>SOC-2 Ready Architecture</span>
         </div>
-        <span className="font-mono text-zinc-400">99.99% Uptime SLA</span>
+        <span className="font-mono text-zinc-500">99.99% Uptime SLA</span>
       </div>
     </div>
   );
